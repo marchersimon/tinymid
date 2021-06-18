@@ -22,9 +22,47 @@ int toInt(unsigned char *file, int start, int len) {
     return val;
 }
 
-int main(int argc, char *argv[]) {
+int cmpString(char *s1, char *s2, int s1Start) {
+    for(int i = 0; s2[i]; i++) {
+        if(s1[i + s1Start] != s2[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
-    // Check if a file has been passed
+int parseTrack(char* track, int len) {
+    if (len <= 0) {
+        printf("Track length has to be one or greater\n");
+        return 3;
+    }
+
+    if(cmpString(track, "MTrk", len) != 0) {
+        printf("Track length does not correspond to actual length\n");
+        return 3;
+    }
+
+    int trackIndex = 0;
+    int iclIndex = 0;
+
+    char icl[1000];
+
+    for(int i = 0; i < 4; i++) {
+        icl[iclIndex + i] = track[trackIndex + i];
+        if((track[trackIndex + i] & 0x80 ) == 0) {
+            trackIndex += i + 1;
+            iclIndex += i + 1;
+            break;
+        }
+        if(i == 3 && (track[i] & 0x80) != 0) {
+            printf("Delta time cannot be greater than 4 Bytes\n");
+            return 3;
+        }
+    }
+
+}
+
+int main(int argc, char *argv[]) {
     
     if(argc < 2) {
         printf("Please specify a file to convert\n");
@@ -49,7 +87,9 @@ int main(int argc, char *argv[]) {
 
     int index = 0;
 
-    if(strncmp(file, "MThd", 4) != 0) {
+    // Header
+
+    if(cmpString(file, "MThd", 0) != 0) {
         printf("File is not a MIDI file\n");
         return 3;
     }
@@ -93,5 +133,17 @@ int main(int argc, char *argv[]) {
         return 3;
     }
     
+    // Tracks
+
+    if(cmpString(file, "MTrk", index) != 0) {
+        printf("Expected \"MTrk\" at position 0x%02X\n", index);
+        return 3;
+    }
+    index += 4;
+
+    if(parseTrack(file + index + 4, toInt(file, index, 4)) != 0) {
+        return 3;
+    }
+
     return 0;
 }
