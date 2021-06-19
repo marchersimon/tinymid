@@ -1,2 +1,2 @@
 build:
-	gcc src/main.c -o mid2icl
+	g++ src/*.cpp -o mid2icl
