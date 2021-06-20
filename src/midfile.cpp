@@ -67,6 +67,7 @@ int Midfile::read() {
 	midstream.read((char*)file, size);
 
 	midstream.close();
+	log::debug("File read into memory");
 	return 0;
 }
 
@@ -84,25 +85,30 @@ int Midfile::parseHeader() {
 	format = getword();
 	switch(format) {
 		case 0:
+			log::debug("File format 0: Single track file format");
 			log::error("Single track file format not supported yet");
 			return 3;
 		case 1:
+			log::debug("File format 1: Multiple track file format");
 			break;
 		case 2:
+			log::error("File format 2: Multiple fong file format");
 			log::error("Multiple song file format not supported yet");
 			return 3;
 		default:
-			log::error("Invalid file format");
+			log::error("Invalid file format: " + std::to_string(format));
 			return 3;
 	}
 
 	numberOfTracks = getword();
 	if(numberOfTracks < 1) {
+		log::debug("Number of tracks: " + std::to_string(numberOfTracks));
 		log::error("File has to contain at least one track");
 		return 3;
 	}
 
 	division = (std::int16_t)getword();
+	log::debug("Divisions: " + log::hex_to_string(division) + ", " + std::to_string(division));
 	if(division < 0) {
 		log::error("SMPTE compatible units not supported yet");
 		return 3;

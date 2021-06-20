@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 		log::error((std::string)"File "  + argv[argc - 1] + " could not be opened");
 		return 2;
 	}
+	log::debug((std::string)"Opened " + argv[argc - 1]);
 
 	if(midfile.read()) {
 		return 2;
