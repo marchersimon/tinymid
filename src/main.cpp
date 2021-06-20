@@ -3,6 +3,7 @@
 #include <getopt.h>
 
 #include "midfile.h"
+#include "log.h"
 
 void printHelp() {
 	std::cout << "Usage: mid2icl [options] [file]\n"
@@ -17,6 +18,7 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"debug", no_argument, NULL, 'd'},
+		{NULL, 0, NULL, 0},
 	};
 
 	char opt;
@@ -27,19 +29,19 @@ int main(int argc, char *argv[]) {
 				printHelp();
 				return 0;
 			case 'd':
-				// TODO
+				log::setLevel("debug");
 				break;
 		}
 	}
 
 	if(argv[argc - 1][0] == '-') {
-		std::cout << "Please specify a file to convert" << std::endl;
+		log::error("Please specify a file to convert");
 		return 1;
 	}
 
 	Midfile midfile(argv[argc - 1]);
 	if(!midfile.is_open()) {
-		std::cout << "File " << argv[argc - 1] << " could not be opened" << std::endl;
+		log::error((std::string)"File "  + argv[argc - 1] + " could not be opened");
 		return 2;
 	}
 

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "log.h"
+
 class Midfile {
 	private:
 		std::ifstream midstream;
@@ -53,12 +55,12 @@ int Midfile::read() {
 	size = (int)midstream.tellg() - size;
 
 	if(size == 0) {
-		std::cout << "File cannot be empty" << std::endl;
+		log::error("File cannot be empty");
 		return 1;
 	}
 	file = (uint8_t*) malloc(size);
 	if(file == NULL) {
-		std::cout << "Memory could not be allocated" << std::endl;
+		log::error("Memory could not be allocated");
 		return 1;
 	}
 	midstream.seekg(std::ios::beg);
@@ -70,42 +72,42 @@ int Midfile::read() {
 
 int Midfile::parseHeader() {
 	if(compareString("MThd")) {
-		std::cout << "File is not a valid MIDI file" << std::endl;
+		log::error("File is not a valid MIDI file");
 		return 3;
 	}
 
 	if(getdword() != 6) {
-		std::cout << "Invalid header lenght" << std::endl;
+		log::error("Invalid header lenght");
 		return 3;
 	}
 
 	format = getword();
 	switch(format) {
 		case 0:
-			std::cout << "Single track file format not supported yet" << std::endl;
+			log::error("Single track file format not supported yet");
 			return 3;
 		case 1:
 			break;
 		case 2:
-			std::cout << "Multiple song file format not supported yet" << std::endl;
+			log::error("Multiple song file format not supported yet");
 			return 3;
 		default:
-			std::cout << "Invalid file format" << std::endl;
+			log::error("Invalid file format");
 			return 3;
 	}
 
 	numberOfTracks = getword();
 	if(numberOfTracks < 1) {
-		std::cout << "File has to contain at least one track" << std::endl;
+		log::error("File has to contain at least one track");
 		return 3;
 	}
 
 	division = (std::int16_t)getword();
 	if(division < 0) {
-		std::cout << "SMPTE compatible units not supported yet" << std::endl;
+		log::error("SMPTE compatible units not supported yet");
 		return 3;
 	} else if (division == 0) {
-		std::cout << "Division cannot be 0" << std::endl;
+		log::error("Division cannot be 0");
 		return 3;
 	}
 

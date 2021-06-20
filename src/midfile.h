@@ -4,12 +4,14 @@
 #include <iostream>
 #include <fstream>
 
+#include "log.h"
+
 class Midfile {
 	private:
 		std::ifstream midstream;
 		std::uint8_t *file;
 		int size;
-		int pos = 0;
+		int pos;
 		int format;
 		int numberOfTracks;
 		int division;
