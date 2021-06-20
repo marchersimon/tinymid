@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if(argv[argc - 1][0] == '-') {
+	if(argc < 2 || argv[argc - 1][0] == '-') {
 		log::error("Please specify a file to convert");
 		return 1;
 	}
