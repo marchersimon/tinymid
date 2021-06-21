@@ -2,24 +2,29 @@
 
 namespace log {
 	namespace {
-		static int logLevel = 2;
+		int logLevel = 2;
 		// 0 ... Status
 		// 1 ... Error
 		// 2 ... Warnings
 		// 3 ... Debug
+		bool color = true;
 	}
 
 	void setLevel(std::string level) {
-	if(level == "status") {
-		logLevel = 0;
-	} else if (level == "error") {
-		logLevel = 1;
-	} else if (level == "warn") {
-		logLevel = 2;
-	} else if (level == "debug") {
-		logLevel = 3;
+		if(level == "status") {
+			logLevel = 0;
+		} else if (level == "error") {
+			logLevel = 1;
+		} else if (level == "warn") {
+			logLevel = 2;
+		} else if (level == "debug") {
+			logLevel = 3;
+		}
 	}
-}
+
+	void setColor(bool c) {
+		color = c;
+	}
 
 	void status(std::string message) {
 		std::cout << message << std::endl;
@@ -27,19 +32,28 @@ namespace log {
 
 	void error(std::string message) {
 		if(logLevel >= 1) {
-			std::cout << "\033[;31m" << message << "\033[1;m" << std::endl;
+			if(color) std::cout << "\033[;31m";
+			std::cout <<  message;
+			if(color) std::cout << "\033[1;m";
+			std::cout << std::endl;
 		}
 	}
 
 	void warn(std::string message) {
 		if(logLevel >= 2) {
-			std::cout << "\033[;33m" << message << "\033[1;m" << std::endl;
+			if(color) std::cout << "\033[;33m";
+			std::cout <<  message;
+			if(color) std::cout << "\033[1;m";
+			std::cout << std::endl;
 		}
 	}
 
 	void debug(std::string message) {
 		if(logLevel >= 3) {
-			std::cout << "\033[;90m" << message << "\033[1;m" << std::endl;
+			if(color) std::cout << "\033[;90m";
+			std::cout <<  message;
+			if(color) std::cout << "\033[1;m";
+			std::cout << std::endl;
 		}
 	}
 

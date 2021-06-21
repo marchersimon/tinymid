@@ -9,8 +9,9 @@ void printHelp() {
 	std::cout << "Usage: mid2icl [options] [file]\n"
 				 "\n"
 				 "Options:\n"
-				 "  -h, --help   Display this help\n"
-				 "  -d, --debug  Show debug messages\n" << std::endl;
+				 "  -h, --help       Display this help\n"
+				 "  -d, --debug      Show debug messages\n"
+				 "  -n, --no-color   No colors" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -18,18 +19,22 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"debug", no_argument, NULL, 'd'},
+		{"no-color", no_argument, NULL, 'n'},
 		{NULL, 0, NULL, 0},
 	};
 
 	char opt;
 
-	while((opt = getopt_long(argc, argv, "hd", long_options, NULL)) != -1) {
+	while((opt = getopt_long(argc, argv, "hdn", long_options, NULL)) != -1) {
 		switch(opt) {
 			case 'h':
 				printHelp();
 				return 0;
 			case 'd':
 				log::setLevel("debug");
+				break;
+			case 'n':
+				log::setColor(false);
 				break;
 		}
 	}

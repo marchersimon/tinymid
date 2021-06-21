@@ -5,6 +5,7 @@
 
 namespace log {
 	void setLevel(std::string level);
+	void setColor(bool c);
 	void status(std::string message);
 	void error(std::string message);
 	void warn(std::string message);
