@@ -22,7 +22,7 @@ class Midfile {
 		Midfile(char filename[]);
 		bool is_open();
 		int read();
-		int parseHeader();        
+		int parseHeader();
 };
 
 Midfile::Midfile(char filename[]) {
@@ -49,7 +49,7 @@ bool Midfile::is_open() {
 	return midstream.is_open();
 }
 
-int Midfile::read() {
+int Midfile::read() { // reads file into memory
 	size = midstream.tellg();
 	midstream.seekg(0, std::ios::end);
 	size = (int)midstream.tellg() - size;
@@ -72,16 +72,19 @@ int Midfile::read() {
 }
 
 int Midfile::parseHeader() {
+	// Check header string
 	if(compareString("MThd")) {
 		log::error("File is not a valid MIDI file");
 		return 3;
 	}
 
+	// Check header length
 	if(getdword() != 6) {
 		log::error("Invalid header lenght");
 		return 3;
 	}
 
+	// Check file format
 	format = getword();
 	switch(format) {
 		case 0:
@@ -93,13 +96,14 @@ int Midfile::parseHeader() {
 			break;
 		case 2:
 			log::error("File format 2: Multiple fong file format");
-			log::error("Multiple song file format not supported yet");
+			log::error("Multiple song file format not supported");
 			return 3;
 		default:
 			log::error("Invalid file format: " + std::to_string(format));
 			return 3;
 	}
 
+	// Check number of tracks
 	numberOfTracks = getword();
 	if(numberOfTracks < 1) {
 		log::debug("Number of tracks: " + std::to_string(numberOfTracks));
@@ -107,10 +111,11 @@ int Midfile::parseHeader() {
 		return 3;
 	}
 
-	division = (std::int16_t)getword();
+	
+	division = (std::int16_t)getword(); // interpret uint16_t as int16_t
 	log::debug("Divisions: " + log::hex_to_string(division) + ", " + std::to_string(division));
 	if(division < 0) {
-		log::error("SMPTE compatible units not supported yet");
+		log::error("SMPTE compatible units not supported");
 		return 3;
 	} else if (division == 0) {
 		log::error("Division cannot be 0");

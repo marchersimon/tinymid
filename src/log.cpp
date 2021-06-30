@@ -15,14 +15,14 @@ namespace log {
 			logLevel = 0;
 		} else if (level == "error") {
 			logLevel = 1;
-		} else if (level == "warn") {
+		} else if (level == "warn") { // default
 			logLevel = 2;
 		} else if (level == "debug") {
 			logLevel = 3;
 		}
 	}
 
-	void setColor(bool c) {
+	void enableColor(bool c) {
 		color = c;
 	}
 
@@ -32,7 +32,7 @@ namespace log {
 
 	void error(std::string message) {
 		if(logLevel >= 1) {
-			if(color) std::cout << "\033[;31m";
+			if(color) std::cout << "\033[;31m"; // red
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";
 			std::cout << std::endl;
@@ -41,7 +41,7 @@ namespace log {
 
 	void warn(std::string message) {
 		if(logLevel >= 2) {
-			if(color) std::cout << "\033[;33m";
+			if(color) std::cout << "\033[;33m"; // orange
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";
 			std::cout << std::endl;
@@ -50,7 +50,7 @@ namespace log {
 
 	void debug(std::string message) {
 		if(logLevel >= 3) {
-			if(color) std::cout << "\033[;90m";
+			if(color) std::cout << "\033[;90m"; // grey
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";
 			std::cout << std::endl;

@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 				log::setLevel("debug");
 				break;
 			case 'n':
-				log::setColor(false);
+				log::enableColor(false);
 				break;
 		}
 	}
