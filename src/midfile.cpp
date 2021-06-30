@@ -19,13 +19,13 @@ class Midfile {
 		int compareString(std::string s);
 
 	public:
-		Midfile(char filename[]);
+		Midfile(std::string filename);
 		bool is_open();
 		int read();
 		int parseHeader();
 };
 
-Midfile::Midfile(char filename[]) {
+Midfile::Midfile(std::string filename) {
 	midstream.open(filename, std::ios::binary);
 }
 

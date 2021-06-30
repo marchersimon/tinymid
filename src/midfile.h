@@ -22,7 +22,7 @@ class Midfile {
 		int compareString(std::string s);
 
 	public:
-		Midfile(char filename[]);
+		Midfile(std::string filename);
 		bool is_open();
 		int read();
 		int parseHeader();        

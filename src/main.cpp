@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include <getopt.h>
 
 #include "midfile.h"
 #include "log.h"
+#include "opts.h"
 
 void printHelp() {
 	std::cout << "Usage: mid2icl [options] [file]\n"
@@ -12,44 +12,28 @@ void printHelp() {
 				 "  -h, --help       Display this help\n"
 				 "  -d, --debug      Show debug messages\n"
 				 "  -n, --no-color   No colors" << std::endl;
+	exit(0);
 }
 
 int main(int argc, char *argv[]) {
 
-	static struct option long_options[] = {
-		{"help", no_argument, NULL, 'h'},
-		{"debug", no_argument, NULL, 'd'},
-		{"no-color", no_argument, NULL, 'n'},
-		{NULL, 0, NULL, 0},
-	};
+	opts::parse(argc, argv);
 
-	char opt;
+	if(opts::help  == true ) printHelp();
+	if(opts::debug == true ) log::setLevel("debug");
+	if(opts::color == false) log::enableColor(false);
 
-	while((opt = getopt_long(argc, argv, "hdn", long_options, NULL)) != -1) {
-		switch(opt) {
-			case 'h':
-				printHelp();
-				return 0;
-			case 'd':
-				log::setLevel("debug");
-				break;
-			case 'n':
-				log::enableColor(false);
-				break;
-		}
-	}
-
-	if(argc < 2 || argv[argc - 1][0] == '-') {
-		log::error("Please specify a file to convert");
+	if(opts::file.empty()) {
+		log::error("No file specified");
 		return 1;
 	}
 
-	Midfile midfile(argv[argc - 1]);
-	if(!midfile.is_open()) {
-		log::error((std::string)"File "  + argv[argc - 1] + " could not be opened");
+	Midfile midfile(opts::file);
+	if(midfile.is_open() == false) {
+		log::error("File "  + opts::file + " could not be opened");
 		return 2;
 	}
-	log::debug((std::string)"Opened " + argv[argc - 1]);
+	log::debug("Opened " + opts::file);
 
 	if(midfile.read()) {
 		return 2;
