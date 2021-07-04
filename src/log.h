@@ -3,8 +3,9 @@
 
 #include <iostream>
 
-namespace log {
-	void setLevel(std::string level);
+namespace Log {
+	enum Level : unsigned char {Status, Error, Warn, Debug};
+	void setLevel(Level level);
 	void enableColor(bool c);
 	void status(std::string message);
 	void error(std::string message);

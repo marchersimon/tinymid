@@ -1,8 +1,13 @@
 #include <iostream>
 
-namespace log {
+namespace Log {
+
+	enum Level : unsigned char {
+		Status, Error, Warn, Debug
+	};
+
 	namespace {
-		int logLevel = 2;
+		Level logLevel = Warn;
 		// 0 ... Status
 		// 1 ... Error
 		// 2 ... Warnings
@@ -10,16 +15,8 @@ namespace log {
 		bool color = true;
 	}
 
-	void setLevel(std::string level) {
-		if(level == "status") {
-			logLevel = 0;
-		} else if (level == "error") {
-			logLevel = 1;
-		} else if (level == "warn") { // default
-			logLevel = 2;
-		} else if (level == "debug") {
-			logLevel = 3;
-		}
+	void setLevel(Level level) {
+		logLevel = level;
 	}
 
 	void enableColor(bool c) {
@@ -31,7 +28,7 @@ namespace log {
 	}
 
 	void error(std::string message) {
-		if(logLevel >= 1) {
+		if(logLevel >= Error) {
 			if(color) std::cout << "\033[;31m"; // red
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";
@@ -40,7 +37,7 @@ namespace log {
 	}
 
 	void warn(std::string message) {
-		if(logLevel >= 2) {
+		if(logLevel >= Warn) {
 			if(color) std::cout << "\033[;33m"; // orange
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";
@@ -49,7 +46,7 @@ namespace log {
 	}
 
 	void debug(std::string message) {
-		if(logLevel >= 3) {
+		if(logLevel >= Debug) {
 			if(color) std::cout << "\033[;90m"; // grey
 			std::cout <<  message;
 			if(color) std::cout << "\033[1;m";

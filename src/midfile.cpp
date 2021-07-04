@@ -55,32 +55,32 @@ int Midfile::read() { // reads file into memory
 	size = (int)midstream.tellg() - size;
 
 	if(size == 0) {
-		log::error("File cannot be empty");
+		Log::error("File cannot be empty");
 		return 1;
 	}
 	file = (uint8_t*) malloc(size);
 	if(file == NULL) {
-		log::error("Memory could not be allocated");
+		Log::error("Memory could not be allocated");
 		return 1;
 	}
 	midstream.seekg(std::ios::beg);
 	midstream.read((char*)file, size);
 
 	midstream.close();
-	log::debug("File read into memory");
+	Log::debug("File read into memory");
 	return 0;
 }
 
 int Midfile::parseHeader() {
 	// Check header string
 	if(compareString("MThd")) {
-		log::error("File is not a valid MIDI file");
+		Log::error("File is not a valid MIDI file");
 		return 3;
 	}
 
 	// Check header length
 	if(getdword() != 6) {
-		log::error("Invalid header lenght");
+		Log::error("Invalid header lenght");
 		return 3;
 	}
 
@@ -88,37 +88,37 @@ int Midfile::parseHeader() {
 	format = getword();
 	switch(format) {
 		case 0:
-			log::debug("File format 0: Single track file format");
-			log::error("Single track file format not supported yet");
+			Log::debug("File format 0: Single track file format");
+			Log::error("Single track file format not supported yet");
 			return 3;
 		case 1:
-			log::debug("File format 1: Multiple track file format");
+			Log::debug("File format 1: Multiple track file format");
 			break;
 		case 2:
-			log::error("File format 2: Multiple fong file format");
-			log::error("Multiple song file format not supported");
+			Log::error("File format 2: Multiple fong file format");
+			Log::error("Multiple song file format not supported");
 			return 3;
 		default:
-			log::error("Invalid file format: " + std::to_string(format));
+			Log::error("Invalid file format: " + std::to_string(format));
 			return 3;
 	}
 
 	// Check number of tracks
 	numberOfTracks = getword();
 	if(numberOfTracks < 1) {
-		log::debug("Number of tracks: " + std::to_string(numberOfTracks));
-		log::error("File has to contain at least one track");
+		Log::debug("Number of tracks: " + std::to_string(numberOfTracks));
+		Log::error("File has to contain at least one track");
 		return 3;
 	}
 
 	
 	division = (std::int16_t)getword(); // interpret uint16_t as int16_t
-	log::debug("Divisions: " + log::hex_to_string(division) + ", " + std::to_string(division));
+	Log::debug("Divisions: " + Log::hex_to_string(division) + ", " + std::to_string(division));
 	if(division < 0) {
-		log::error("SMPTE compatible units not supported");
+		Log::error("SMPTE compatible units not supported");
 		return 3;
 	} else if (division == 0) {
-		log::error("Division cannot be 0");
+		Log::error("Division cannot be 0");
 		return 3;
 	}
 

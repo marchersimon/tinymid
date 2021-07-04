@@ -20,20 +20,20 @@ int main(int argc, char *argv[]) {
 	opts::parse(argc, argv);
 
 	if(opts::help  == true ) printHelp();
-	if(opts::debug == true ) log::setLevel("debug");
-	if(opts::color == false) log::enableColor(false);
+	if(opts::debug == true ) Log::setLevel(Log::Debug);
+	if(opts::color == false) Log::enableColor(false);
 
 	if(opts::file.empty()) {
-		log::error("No file specified");
+		Log::error("No file specified");
 		return 1;
 	}
 
 	Midfile midfile(opts::file);
 	if(midfile.is_open() == false) {
-		log::error("File "  + opts::file + " could not be opened");
+		Log::error("File "  + opts::file + " could not be opened");
 		return 2;
 	}
-	log::debug("Opened " + opts::file);
+	Log::debug("Opened " + opts::file);
 
 	if(midfile.read()) {
 		return 2;
