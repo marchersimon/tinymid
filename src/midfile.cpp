@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "log.h"
+#include "event.h"
 
 class Midfile {
 	private:
@@ -16,6 +18,8 @@ class Midfile {
 		std::uint32_t getdword();
 		std::uint16_t getword();
 		std::uint8_t getbyte();
+		int getVariableLengthValue();
+		Event getEvent();
 		int compareString(std::string s);
 
 	public:
@@ -23,6 +27,7 @@ class Midfile {
 		bool is_open();
 		int read();
 		int parseHeader();
+		std::vector<Event> parseTrack();
 };
 
 Midfile::Midfile(std::string filename) {
@@ -123,6 +128,83 @@ int Midfile::parseHeader() {
 	}
 
 	return 0;
+}
+
+std::vector<Event> Midfile::parseTrack() {
+	if(compareString("MTrk")) {
+		Log::error("Invalid header track");
+		// exit program
+	}
+	pos += 4; // Ignore track length
+	std::vector<Event> track;
+	while(1) {
+		track.push_back(getEvent());
+		if(track.back().type == 0x2F) {
+			break;
+		}
+	}
+	return track;
+}
+
+Event Midfile::getEvent() {
+	Event event;
+	Log::debug("New event:");
+	for(int i = 0; i < 4; i++) {
+		std::uint8_t byte = getbyte();
+		event.delta |= (byte << (8 * (4 - i)));
+		if(byte < 0x80) {
+			break;
+		}
+		if(i == 4) {
+			Log::error("Delta time cannot be longer than 4 bytes");
+			// exit program
+		}
+	}
+
+	Log::debug("    Delta time: " + Log::hex_to_string(event.delta));
+
+	if(getbyte() == 0xFF) {
+		Log::debug("    Meta event");
+		event.meta = true;
+	} else {
+		pos--;
+		Log::debug("    MIDI event");
+	}
+
+	event.type = getbyte();
+
+	Log::debug("    " + event.getEventName(event.type));
+
+	int length;
+
+	if(event.meta) {
+		length = getVariableLengthValue();
+		if(length == event.getEventLength(event.type)) {
+			Log::debug("    Length: " + std::to_string(length) + " Bytes");
+		} else {
+			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength(event.type)) + " Bytes, got " + std::to_string(length) + " Bytes");
+		}
+	}
+
+	pos += length; //ignore data
+	
+	return event;
+}
+
+int Midfile::getVariableLengthValue() {
+	int value = 0;
+	for(int i = 0; i < 4; i++) {
+		std::uint32_t byte = getbyte();
+		value = value << (7 * (3 - i)) | (byte & 0x7F);
+		if(byte < 0x80) {
+			break;
+		}
+		if(i == 4) {
+			Log::error("Variable length value cannot be longer than 4 bytes");
+			// exit program
+		}
+	}
+	return value;
 }
 
 int Midfile::compareString(std::string s) {

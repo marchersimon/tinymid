@@ -54,7 +54,7 @@ namespace Log {
 		}
 	}
 
-	std::string hex_to_string(int num) {
+	std::string hex_to_string(std::uint32_t num) {
 		char s[9];
 		sprintf(s, "%X", num);
 		std::string str = s;

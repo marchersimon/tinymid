@@ -11,7 +11,7 @@ namespace Log {
 	void error(std::string message);
 	void warn(std::string message);
 	void debug(std::string message);
-	std::string hex_to_string(int num);
+	std::string hex_to_string(std::uint32_t num);
 }
 
 #endif // LOG_H

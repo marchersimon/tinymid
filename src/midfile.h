@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "log.h"
+#include "event.h"
 
 class Midfile {
 	private:
@@ -25,7 +27,8 @@ class Midfile {
 		Midfile(std::string filename);
 		bool is_open();
 		int read();
-		int parseHeader();        
+		int parseHeader();
+		std::vector<Event> parseTrack();    
 };
 
 #endif // MIDFILE_H

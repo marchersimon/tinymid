@@ -4,6 +4,7 @@
 #include "midfile.h"
 #include "log.h"
 #include "opts.h"
+#include "event.h"
 
 void printHelp() {
 	std::cout << "Usage: mid2icl [options] [file]\n"
@@ -42,6 +43,8 @@ int main(int argc, char *argv[]) {
 	if(midfile.parseHeader()) {
 		return 3;
 	}
+
+	midfile.parseTrack();
 
 	return 0;
 }
