@@ -31,7 +31,7 @@ namespace opts {
 					debug = true;
 					break;
 				case 'n':
-					color = true;
+					color = false;
 					break;
 			}
 		}

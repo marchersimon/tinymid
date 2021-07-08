@@ -137,12 +137,9 @@ std::vector<Event> Midfile::parseTrack() {
 	}
 	pos += 4; // Ignore track length
 	std::vector<Event> track;
-	while(1) {
+	do {
 		track.push_back(getEvent());
-		if(track.back().type == 0x2F) {
-			break;
-		}
-	}
+	} while (track.back().type != 0x2F);
 	return track;
 }
 
@@ -179,7 +176,7 @@ Event Midfile::getEvent() {
 
 	if(event.meta) {
 		length = getVariableLengthValue();
-		if(length == event.getEventLength(event.type)) {
+		if(event.getEventLength(event.type) != -1 || length == event.getEventLength(event.type)) {
 			Log::debug("    Length: " + std::to_string(length) + " Bytes");
 		} else {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength(event.type)) + " Bytes, got " + std::to_string(length) + " Bytes");
