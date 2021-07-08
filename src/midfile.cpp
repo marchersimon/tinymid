@@ -100,7 +100,7 @@ int Midfile::parseHeader() {
 			Log::debug("File format 1: Multiple track file format");
 			break;
 		case 2:
-			Log::error("File format 2: Multiple fong file format");
+			Log::debug("File format 2: Multiple song file format");
 			Log::error("Multiple song file format not supported");
 			return 3;
 		default:
@@ -110,8 +110,8 @@ int Midfile::parseHeader() {
 
 	// Check number of tracks
 	numberOfTracks = getword();
+	Log::debug("Number of tracks: " + std::to_string(numberOfTracks));
 	if(numberOfTracks < 1) {
-		Log::debug("Number of tracks: " + std::to_string(numberOfTracks));
 		Log::error("File has to contain at least one track");
 		return 3;
 	}
@@ -159,32 +159,70 @@ Event Midfile::getEvent() {
 	}
 
 	Log::debug("    Delta time: " + Log::hex_to_string(event.delta));
-
+	
 	if(getbyte() == 0xFF) {
 		Log::debug("    Meta event");
 		event.meta = true;
+		event.type = getbyte();
 	} else {
 		pos--;
-		Log::debug("    MIDI event");
+		event.type = getbyte();
+		if((event.type & 0xF0) != 0xF0) {
+			Log::debug("    MIDI event on channel " + std::to_string(event.getChannel()));
+			if(event.getChannel() != 0) {
+				Log::debug("    Converting into channel 0");
+				event.stripChannel();
+			}
+		} else {
+			Log::debug("    MIDI event");
+		}
 	}
 
-	event.type = getbyte();
-
-	Log::debug("    " + event.getEventName(event.type));
+	Log::debug("    " + event.getEventName());
 
 	int length;
 
 	if(event.meta) {
 		length = getVariableLengthValue();
-		if(event.getEventLength(event.type) == -1 || length == event.getEventLength(event.type)) {
+		if(event.getEventLength() == -1 || length == event.getEventLength()) {
 			Log::debug("    Length: " + std::to_string(length) + " Bytes");
 		} else {
-			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength(event.type)) + " Bytes, got " + std::to_string(length) + " Bytes");
+			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
+		}
+		pos += length; //ignore data
+	} else {
+		switch(event.type) {
+			case event.NOTE_ON:
+			case event.NOTE_OFF:
+				event.note = getbyte();
+				event.velocity = getbyte();
+				Log::debug("    Note " + event.getNoteName() + " with velocity " + std::to_string(event.velocity)); 
+				if(event.type == event.NOTE_ON && event.velocity == 0) {
+					Log::debug("    Converting into note off");
+					event.type = event.NOTE_OFF;
+				}
+				break;
+			case event.KEY_PRESSURE:
+				pos += 2; // ignore event
+				break;
+			case event.CONTROLL_CHANGE:
+				pos += 2;
+				break;
+			case event.PROGRAM_CHANGE:
+				pos++;
+				break;
+			case event.CHANNEL_PRESSURE:
+				pos++;
+				break;
+			case event.PITCH_WHEEL_CHANGE:
+				pos += 2;
+				break;
+			case event.SYSTEM_MESSAGE:
+				pos += 2;
+				break;
 		}
 	}
 
-	pos += length; //ignore data
-	
 	return event;
 }
 
