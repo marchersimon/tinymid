@@ -4,6 +4,7 @@
 
 #include "log.h"
 #include "event.h"
+#include "exception.h"
 
 class Midfile {
 	private:
@@ -118,7 +119,7 @@ int Midfile::parseHeader() {
 
 	
 	division = (std::int16_t)getword(); // interpret uint16_t as int16_t
-	Log::debug("Divisions: " + Log::hex_to_string(division) + ", " + std::to_string(division));
+	Log::debug("Divisions: " + Log::to_hex_string(division) + ", " + std::to_string(division));
 	if(division < 0) {
 		Log::error("SMPTE compatible units not supported");
 		return 3;
@@ -145,20 +146,11 @@ std::vector<Event> Midfile::parseTrack() {
 
 Event Midfile::getEvent() {
 	Event event;
-	Log::debug("New event:");
-	for(int i = 0; i < 4; i++) {
-		std::uint8_t byte = getbyte();
-		event.delta |= (byte << (8 * (4 - i)));
-		if(byte < 0x80) {
-			break;
-		}
-		if(i == 4) {
-			Log::error("Delta time cannot be longer than 4 bytes");
-			// exit program
-		}
-	}
+	Log::debug("(" + Log::to_hex_string(pos) + ") new event:");
 
-	Log::debug("    Delta time: " + Log::hex_to_string(event.delta));
+	event.delta = getVariableLengthValue();
+
+	Log::debug("    Delta time: " + std::to_string(event.delta));
 	
 	if(getbyte() == 0xFF) {
 		Log::debug("    Meta event");
@@ -183,7 +175,11 @@ Event Midfile::getEvent() {
 	int length;
 
 	if(event.meta) {
-		length = getVariableLengthValue();
+		try {
+			length = getVariableLengthValue();
+		} catch (VLVException ex) {
+			Log::error("(" + Log::to_hex_string(ex.getPos()) + ") Variable length value cannot be longer than 4 bytes");
+		}
 		if(event.getEventLength() == -1 || length == event.getEventLength()) {
 			Log::debug("    Length: " + std::to_string(length) + " Bytes");
 		} else {
@@ -203,26 +199,16 @@ Event Midfile::getEvent() {
 				}
 				break;
 			case event.KEY_PRESSURE:
-				pos += 2; // ignore event
-				break;
 			case event.CONTROLL_CHANGE:
-				pos += 2;
-				break;
 			case event.PROGRAM_CHANGE:
-				pos++;
-				break;
 			case event.CHANNEL_PRESSURE:
-				pos++;
-				break;
 			case event.PITCH_WHEEL_CHANGE:
-				pos += 2;
-				break;
 			case event.SYSTEM_MESSAGE:
-				pos += 2;
+				Log::debug("    Ignoring");
+				pos += event.getEventLength();
 				break;
 		}
 	}
-
 	return event;
 }
 
@@ -230,11 +216,12 @@ int Midfile::getVariableLengthValue() {
 	int value = 0;
 	for(int i = 0; i < 4; i++) {
 		std::uint32_t byte = getbyte();
-		value = value << (7 * (3 - i)) | (byte & 0x7F);
+		value = (value << 7) | (byte & 0x7F);
 		if(byte < 0x80) {
 			break;
 		}
 		if(i == 4) {
+			throw VLVException(pos - 4);
 			Log::error("Variable length value cannot be longer than 4 bytes");
 			// exit program
 		}

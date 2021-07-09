@@ -10,6 +10,7 @@ class Event {
 		std::uint8_t velocity;
 
 		enum event {
+			// MIDI
 			NOTE_OFF = 0x80,
 			NOTE_ON = 0x90,
 			KEY_PRESSURE = 0xA0,
@@ -18,6 +19,22 @@ class Event {
 			CHANNEL_PRESSURE = 0xD0,
 			PITCH_WHEEL_CHANGE = 0xE0,
 			SYSTEM_MESSAGE = 0xF0,
+			// Meta
+			SEQUENCE_NUMBER = 0x00,
+			TEXT_EVENT = 0x01,
+			COPYRIGHT = 0x02,
+			SEQUENCE_NAME = 0x03,
+			INSTRUMENT = 0x04,
+			LYRIC = 0x05,
+			MARKER_TEXT = 0x06,
+			CUE_POINT = 0x07,
+			MIDI_CHANNEL_PREFIX = 0x20,
+			END_OF_TRACK = 0x2F,
+			TEMPO = 0x51,
+			SMPTE_OFFSET = 0x54,
+			TIME_SIGNATURE = 0x58,
+			KEY_SIGNATURE = 0x59,
+			SEQUENCER_SPECIFIC = 0x7F,
 		};
 
 		std::string getEventName() {
@@ -34,34 +51,42 @@ class Event {
 				case CHANNEL_PRESSURE: return "Channel pressure"; break;
 				case PITCH_WHEEL_CHANGE: return "Pitch wheel change"; break;
 				// Meta
-				case 0x00: return "Sequence number"; break;
-				case 0x01: return "Text event"; break;
-				case 0x02: return "Copyright notice"; break;
-				case 0x03: return "Sequence or track name"; break;
-				case 0x04: return "Instrument name"; break;
-				case 0x05: return "Lyric text"; break;
-				case 0x06: return "Marker text"; break;
-				case 0x07: return "Cue point"; break;
-				case 0x20: return "MIDI channel prefix assignment"; break;
-				case 0x2F: return "End of track"; break;
-				case 0x51: return "Tempo setting"; break;
-				case 0x54: return "SMPTE offset"; break;
-				case 0x58: return "Time signature"; break;
-				case 0x59: return "Key signature"; break;
-				case 0x7F: return "Sequencer specific event"; break;
+				case SEQUENCE_NUMBER: return "Sequence number"; break;
+				case TEXT_EVENT: return "Text event"; break;
+				case COPYRIGHT: return "Copyright notice"; break;
+				case SEQUENCE_NAME: return "Sequence or track name"; break;
+				case INSTRUMENT: return "Instrument name"; break;
+				case LYRIC: return "Lyric text"; break;
+				case MARKER_TEXT: return "Marker text"; break;
+				case CUE_POINT: return "Cue point"; break;
+				case MIDI_CHANNEL_PREFIX: return "MIDI channel prefix assignment"; break;
+				case END_OF_TRACK: return "End of track"; break;
+				case TEMPO: return "Tempo setting"; break;
+				case SMPTE_OFFSET: return "SMPTE offset"; break;
+				case TIME_SIGNATURE: return "Time signature"; break;
+				case KEY_SIGNATURE: return "Key signature"; break;
+				case SEQUENCER_SPECIFIC: return "Sequencer specific event"; break;
 			}
 			return "Unknown event type";
 		}
 
 		int getEventLength() {
 			switch(type) {
-				case 0x00: return 2; break;
-				case 0x20: return 1; break;
-				case 0x2F: return 0; break;
-				case 0x51: return 3; break;
-				case 0x54: return 5; break;
-				case 0x58: return 4; break;
-				case 0x59: return 2; break;
+				// MIDI
+				case KEY_PRESSURE: return 2; break;
+				case CONTROLL_CHANGE: return 2; break;
+				case PROGRAM_CHANGE: return 1; break;
+				case CHANNEL_PRESSURE: return 1; break;
+				case PITCH_WHEEL_CHANGE: return 2; break;
+				case SYSTEM_MESSAGE: return 2; break;
+				// Meta
+				case SEQUENCE_NUMBER: return 2; break;
+				case MIDI_CHANNEL_PREFIX: return 1; break;
+				case END_OF_TRACK: return 0; break;
+				case TEMPO: return 3; break;
+				case SMPTE_OFFSET: return 5; break;
+				case TIME_SIGNATURE: return 4; break;
+				case KEY_SIGNATURE: return 2; break;
 			}
 			return -1;
 		}

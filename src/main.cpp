@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
 	midfile.parseTrack();
 	Log::setLevel(Log::Debug);
 	midfile.parseTrack();
+	
 
 	return 0;
 }
