@@ -2,12 +2,13 @@
 
 class Event {
 	public:
-		std::uint32_t delta = 0;
+		uint32_t delta = 0;
+		int totalTime = 0;
 		bool meta = false;
-		std::uint8_t type;
+		uint8_t type;
 
-		std::uint8_t note;
-		std::uint8_t velocity;
+		uint8_t note;
+		uint8_t velocity;
 
 		enum event {
 			// MIDI

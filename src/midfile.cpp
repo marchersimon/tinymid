@@ -9,18 +9,18 @@
 class Midfile {
 	private:
 		std::ifstream midstream;
-		std::uint8_t *file;
+		uint8_t *file;
 		int size;
 		int pos = 0;
 		int format;
 		int numberOfTracks;
 		int division;
 
-		std::uint32_t getdword();
-		std::uint16_t getword();
-		std::uint8_t getbyte();
+		uint32_t getdword();
+		uint16_t getword();
+		uint8_t getbyte();
 		int getVariableLengthValue();
-		Event getEvent();
+		Event getEvent(int offset);
 		int compareString(std::string s);
 
 	public:
@@ -35,16 +35,16 @@ Midfile::Midfile(std::string filename) {
 	midstream.open(filename, std::ios::binary);
 }
 
-std::uint8_t Midfile::getbyte() {
+uint8_t Midfile::getbyte() {
 	return file[pos++];
 }
 
-std::uint16_t Midfile::getword() {
+uint16_t Midfile::getword() {
 	return file[pos++] <<  8 |
 		   file[pos++];
 }
 
-std::uint32_t Midfile::getdword() {
+uint32_t Midfile::getdword() {
 	return file[pos++] << 24 |
 		   file[pos++] << 16 |
 		   file[pos++] <<  8 |
@@ -136,19 +136,20 @@ std::vector<Event> Midfile::parseTrack() {
 		Log::error("Invalid header track");
 		// exit program
 	}
-	pos += 4; // Ignore track length
+	pos += 4; // Ignore track length // TODO
 	std::vector<Event> track;
-	do {
-		track.push_back(getEvent());
-	} while (track.back().type != 0x2F);
+	while (track.back().type != 0x2F) {
+		track.push_back(getEvent(track.back().totalTime));
+	}
 	return track;
 }
 
-Event Midfile::getEvent() {
+Event Midfile::getEvent(int offset) {
 	Event event;
 	Log::debug("(" + Log::to_hex_string(pos) + ") new event:");
 
 	event.delta = getVariableLengthValue();
+	event.totalTime = offset + event.delta;
 
 	Log::debug("    Delta time: " + std::to_string(event.delta));
 	
@@ -185,7 +186,25 @@ Event Midfile::getEvent() {
 		} else {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
 		}
-		pos += length; //ignore data
+		switch(event.type) {
+			case event.SEQUENCE_NUMBER:
+			case event.TEXT_EVENT:
+			case event.COPYRIGHT:
+			case event.SEQUENCE_NAME:
+			case event.INSTRUMENT:
+			case event.LYRIC:
+			case event.MARKER_TEXT:
+			case event.CUE_POINT:
+			case event.MIDI_CHANNEL_PREFIX:
+			case event.END_OF_TRACK: // TODO
+			case event.TEMPO: // TODO
+			case event.SMPTE_OFFSET:
+			case event.TIME_SIGNATURE: // TODO
+			case event.KEY_SIGNATURE:
+			case event.SEQUENCER_SPECIFIC:
+				pos += length; // ignore data
+				break;
+		}
 	} else {
 		switch(event.type) {
 			case event.NOTE_ON:
@@ -215,7 +234,7 @@ Event Midfile::getEvent() {
 int Midfile::getVariableLengthValue() {
 	int value = 0;
 	for(int i = 0; i < 4; i++) {
-		std::uint32_t byte = getbyte();
+		uint32_t byte = getbyte();
 		value = (value << 7) | (byte & 0x7F);
 		if(byte < 0x80) {
 			break;
