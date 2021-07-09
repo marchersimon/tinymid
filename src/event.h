@@ -120,4 +120,47 @@ class Event {
 		int getChannel() {
 			return type & 0x0F;
 		}
+
+		void print(int pos, uint8_t *file, int len) {
+			std::string row;
+			row += formatColumn(Log::to_hex_string(pos), 6);
+			row += " | ";
+			std::string content;
+			for(int i = 0; i < len; i++) {
+				content += Log::to_hex_string(file[pos + i], false);
+				content += " ";
+			}
+			if(content.length() > 39) {
+				content.replace(27, content.length() - 34, "[...]");
+			}
+			row += formatColumn(content, 39);
+			//row += content;
+			row += "| ";
+			row += formatColumn(std::to_string(totalTime), 6);
+			row += " | ";
+			row += formatColumn(std::to_string(delta), 6);
+			row += " | ";
+			row += formatColumn(getEventName(), 25);
+			row += " | ";
+			if(meta) {
+				row += "          ";
+			} else {
+				row += formatColumn("Channel " + std::to_string(getChannel()), 10);
+			}
+
+			row += " | ";
+			if(type == NOTE_ON || type == NOTE_OFF) {
+				row += formatColumn("Note " + getNoteName(), 9);
+				row += "at velocity " + std::to_string(velocity);
+			}
+
+			Log::debug(row);
+		}
+
+		std::string formatColumn(std::string s, int width) {
+			while(width - (int)s.length() > 0) {
+				s += " ";
+			}
+			return s;
+		}
 };

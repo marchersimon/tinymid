@@ -54,14 +54,16 @@ namespace Log {
 		}
 	}
 
-	std::string to_hex_string(uint32_t num) {
+	std::string to_hex_string(uint32_t num, bool prefix = true) {
 		char s[9];
 		sprintf(s, "%X", num);
 		std::string str = s;
 		if(str.size() % 2) {
 			str.insert(0, "0");
 		}
-		str.insert(0, "0x");
+		if(prefix) {
+			str.insert(0, "0x");
+		}
 		return str;
 	}
 }

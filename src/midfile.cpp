@@ -147,32 +147,33 @@ std::vector<Event> Midfile::parseTrack() {
 
 Event Midfile::getEvent(int offset) {
 	Event event;
-	Log::debug("(" + Log::to_hex_string(pos) + ") new event:");
+	int startPos = pos;
+	//Log::debug("(" + Log::to_hex_string(pos) + ") new event:");
 
 	event.delta = getVariableLengthValue();
 	event.totalTime = offset + event.delta;
 
-	Log::debug("    Delta time: " + std::to_string(event.delta));
+	//Log::debug("    Delta time: " + std::to_string(event.delta));
 	
 	if(getbyte() == 0xFF) {
-		Log::debug("    Meta event");
+		//Log::debug("    Meta event");
 		event.meta = true;
 		event.type = getbyte();
 	} else {
 		pos--;
 		event.type = getbyte();
 		if((event.type & 0xF0) != 0xF0) {
-			Log::debug("    MIDI event on channel " + std::to_string(event.getChannel()));
+			//Log::debug("    MIDI event on channel " + std::to_string(event.getChannel()));
 			if(event.getChannel() != 0) {
-				Log::debug("    Converting into channel 0");
+				//Log::debug("    Converting into channel 0");
 				event.stripChannel();
 			}
 		} else {
-			Log::debug("    MIDI event");
+			//Log::debug("    MIDI event");
 		}
 	}
 
-	Log::debug("    " + event.getEventName());
+	//Log::debug("    " + event.getEventName());
 
 	int length;
 
@@ -183,7 +184,7 @@ Event Midfile::getEvent(int offset) {
 			Log::error("(" + Log::to_hex_string(ex.getPos()) + ") Variable length value cannot be longer than 4 bytes");
 		}
 		if(event.getEventLength() == -1 || length == event.getEventLength()) {
-			Log::debug("    Length: " + std::to_string(length) + " Bytes");
+			//Log::debug("    Length: " + std::to_string(length) + " Bytes");
 		} else {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
 		}
@@ -212,9 +213,9 @@ Event Midfile::getEvent(int offset) {
 			case event.NOTE_OFF:
 				event.note = getbyte();
 				event.velocity = getbyte();
-				Log::debug("    Note " + event.getNoteName() + " with velocity " + std::to_string(event.velocity)); 
+				//Log::debug("    Note " + event.getNoteName() + " with velocity " + std::to_string(event.velocity)); 
 				if(event.type == event.NOTE_ON && event.velocity == 0) {
-					Log::debug("    Converting into note off");
+					//Log::debug("    Converting into note off");
 					event.type = event.NOTE_OFF;
 				}
 				break;
@@ -224,11 +225,12 @@ Event Midfile::getEvent(int offset) {
 			case event.CHANNEL_PRESSURE:
 			case event.PITCH_WHEEL_CHANGE:
 			case event.SYSTEM_MESSAGE:
-				Log::debug("    Ignoring");
+				//Log::debug("    Ignoring");
 				pos += event.getEventLength();
 				break;
 		}
 	}
+	event.print(startPos, file, pos - startPos);
 	return event;
 }
 
