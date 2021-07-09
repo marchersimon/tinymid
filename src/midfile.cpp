@@ -138,6 +138,7 @@ std::vector<Event> Midfile::parseTrack() {
 	}
 	pos += 4; // Ignore track length // TODO
 	std::vector<Event> track;
+	track.push_back(getEvent(0));
 	while (track.back().type != 0x2F) {
 		track.push_back(getEvent(track.back().totalTime));
 	}
