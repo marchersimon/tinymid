@@ -19,7 +19,7 @@ class Midfile {
 		uint16_t getword();
 		uint8_t getbyte();
 		int getVariableLengthValue();
-		Event getEvent(int offset);
+		Event getEvent(Event *previous);
 		int compareString(std::string s);
 
 	public:
@@ -138,42 +138,31 @@ std::vector<Event> Midfile::parseTrack() {
 	}
 	pos += 4; // Ignore track length // TODO
 	std::vector<Event> track;
-	track.push_back(getEvent(0));
+	track.push_back(getEvent(NULL));
 	while (track.back().type != 0x2F) {
-		track.push_back(getEvent(track.back().totalTime));
+		track.push_back(getEvent(&track.back()));
 	}
 	return track;
 }
 
-Event Midfile::getEvent(int offset) {
+Event Midfile::getEvent(Event *previous) {
 	Event event;
 	int startPos = pos;
-	//Log::debug("(" + Log::to_hex_string(pos) + ") new event:");
 
 	event.delta = getVariableLengthValue();
-	event.totalTime = offset + event.delta;
-
-	//Log::debug("    Delta time: " + std::to_string(event.delta));
+	if(previous) {
+		event.totalTime = previous->totalTime + event.delta;
+	} else {
+		event.totalTime = event.delta;
+	}
 	
 	if(getbyte() == 0xFF) {
-		//Log::debug("    Meta event");
 		event.meta = true;
 		event.type = getbyte();
 	} else {
 		pos--;
 		event.type = getbyte();
-		if((event.type & 0xF0) != 0xF0) {
-			//Log::debug("    MIDI event on channel " + std::to_string(event.getChannel()));
-			if(event.getChannel() != 0) {
-				//Log::debug("    Converting into channel 0");
-				event.stripChannel();
-			}
-		} else {
-			//Log::debug("    MIDI event");
-		}
 	}
-
-	//Log::debug("    " + event.getEventName());
 
 	int length;
 
@@ -198,13 +187,15 @@ Event Midfile::getEvent(int offset) {
 			case event.MARKER_TEXT:
 			case event.CUE_POINT:
 			case event.MIDI_CHANNEL_PREFIX:
-			case event.END_OF_TRACK: // TODO
-			case event.TEMPO: // TODO
+			case event.END_OF_TRACK:
 			case event.SMPTE_OFFSET:
-			case event.TIME_SIGNATURE: // TODO
+			case event.TIME_SIGNATURE:
 			case event.KEY_SIGNATURE:
 			case event.SEQUENCER_SPECIFIC:
 				pos += length; // ignore data
+				break;
+			case event.TEMPO:
+				event.tempo = (getword() << 8) | getbyte();
 				break;
 		}
 	} else {
@@ -213,9 +204,7 @@ Event Midfile::getEvent(int offset) {
 			case event.NOTE_OFF:
 				event.note = getbyte();
 				event.velocity = getbyte();
-				//Log::debug("    Note " + event.getNoteName() + " with velocity " + std::to_string(event.velocity)); 
 				if(event.type == event.NOTE_ON && event.velocity == 0) {
-					//Log::debug("    Converting into note off");
 					event.type = event.NOTE_OFF;
 				}
 				break;
@@ -225,8 +214,7 @@ Event Midfile::getEvent(int offset) {
 			case event.CHANNEL_PRESSURE:
 			case event.PITCH_WHEEL_CHANGE:
 			case event.SYSTEM_MESSAGE:
-				//Log::debug("    Ignoring");
-				pos += event.getEventLength();
+				pos += event.getEventLength(); // ignore data
 				break;
 		}
 	}

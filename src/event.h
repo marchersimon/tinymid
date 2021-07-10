@@ -9,6 +9,7 @@ class Event {
 
 		uint8_t note;
 		uint8_t velocity;
+		int tempo;
 
 		enum event {
 			// MIDI
@@ -152,6 +153,9 @@ class Event {
 			if(type == NOTE_ON || type == NOTE_OFF) {
 				row += formatColumn("Note " + getNoteName(), 9);
 				row += "at velocity " + std::to_string(velocity);
+			} else if(type == TEMPO) {
+				row += formatColumn(std::to_string(tempo), 6);
+				row += " us per quarter note";
 			}
 
 			if(getEventName() == "Unknown event type") {
