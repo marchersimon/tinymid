@@ -154,7 +154,11 @@ class Event {
 				row += "at velocity " + std::to_string(velocity);
 			}
 
-			Log::debug(row);
+			if(getEventName() == "Unknown event type") {
+				Log::error(row);
+			} else {
+				Log::debug(row);
+			}
 		}
 
 		std::string formatColumn(std::string s, int width) {

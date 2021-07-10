@@ -44,10 +44,11 @@ int main(int argc, char *argv[]) {
 		return 3;
 	}
 
-	Log::setLevel(Log::Error);
-	midfile.parseTrack();
-	Log::setLevel(Log::Debug);
-	midfile.parseTrack();
+	Log::debug(std::string(133, '='));
+	for(int i = 0; i < midfile.numberOfTracks; i++) {
+		midfile.parseTrack();
+		Log::debug(std::string(133, '='));
+	}
 	
 
 	return 0;

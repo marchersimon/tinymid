@@ -13,7 +13,6 @@ class Midfile {
 		int size;
 		int pos = 0;
 		int format;
-		int numberOfTracks;
 		int division;
 
 		uint32_t getdword();
@@ -25,6 +24,7 @@ class Midfile {
 
 	public:
 		Midfile(std::string filename);
+		int numberOfTracks;
 		bool is_open();
 		int read();
 		int parseHeader();
