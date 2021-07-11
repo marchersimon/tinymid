@@ -230,8 +230,8 @@ int Midfile::getVariableLengthValue() {
 			break;
 		}
 		if(i == 4) {
-			throw VLVException(pos - 4);
 			Log::error("Variable length value cannot be longer than 4 bytes");
+			throw VLVException(pos - 4);
 			// exit program
 		}
 	}
