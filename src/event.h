@@ -31,9 +31,7 @@ class Event {
 			LYRIC = 0x05,
 			MARKER_TEXT = 0x06,
 			CUE_POINT = 0x07,
-			DEVICE_NAME = 0x09,
 			MIDI_CHANNEL_PREFIX = 0x20,
-			MIDI_PORT = 0x21,
 			END_OF_TRACK = 0x2F,
 			TEMPO = 0x51,
 			SMPTE_OFFSET = 0x54,
@@ -65,9 +63,7 @@ class Event {
 				case MARKER_TEXT: return "Marker text"; break;
 				case CUE_POINT: return "Cue point"; break;
 				case MIDI_CHANNEL_PREFIX: return "MIDI channel prefix assignment"; break;
-				case DEVICE_NAME: return "Device name"; break;
 				case END_OF_TRACK: return "End of track"; break;
-				case MIDI_PORT: return "MIDI Port"; break;
 				case TEMPO: return "Tempo setting"; break;
 				case SMPTE_OFFSET: return "SMPTE offset"; break;
 				case TIME_SIGNATURE: return "Time signature"; break;
@@ -88,7 +84,6 @@ class Event {
 				// Meta
 				case SEQUENCE_NUMBER: return 2; break;
 				case MIDI_CHANNEL_PREFIX: return 1; break;
-				case MIDI_PORT: return 1; break;
 				case END_OF_TRACK: return 0; break;
 				case TEMPO: return 3; break;
 				case SMPTE_OFFSET: return 5; break;
@@ -163,11 +158,7 @@ class Event {
 				row += " us per quarter note";
 			}
 
-			if(getEventName() == "Unknown event type") {
-				Log::warn(row);
-			} else {
-				Log::debug(row);
-			}
+			Log::debug(row);
 		}
 
 		std::string formatColumn(std::string s, int width) {
