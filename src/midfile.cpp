@@ -173,6 +173,7 @@ Event Midfile::getEvent(Event *previous) {
 			} else {
 				pos--;
 				event.type = getbyte();
+				event.stripChannel();
 			}
 	}
 
