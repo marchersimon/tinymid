@@ -81,7 +81,6 @@ class Event {
 				case PROGRAM_CHANGE: return 1; break;
 				case CHANNEL_PRESSURE: return 1; break;
 				case PITCH_WHEEL_CHANGE: return 2; break;
-				case SYSTEM_MESSAGE: return 2; break;
 				// Meta
 				case SEQUENCE_NUMBER: return 2; break;
 				case MIDI_CHANNEL_PREFIX: return 1; break;
