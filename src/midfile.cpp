@@ -178,6 +178,9 @@ Event Midfile::getEvent(Event *previous) {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
 		}
 		switch(event.type) {
+			case event.TEMPO:
+				event.tempo = (getword() << 8) | getbyte();
+				break;
 			case event.SEQUENCE_NUMBER:
 			case event.TEXT_EVENT:
 			case event.COPYRIGHT:
@@ -192,10 +195,8 @@ Event Midfile::getEvent(Event *previous) {
 			case event.TIME_SIGNATURE:
 			case event.KEY_SIGNATURE:
 			case event.SEQUENCER_SPECIFIC:
+			default:
 				pos += length; // ignore data
-				break;
-			case event.TEMPO:
-				event.tempo = (getword() << 8) | getbyte();
 				break;
 		}
 	} else {

@@ -159,7 +159,7 @@ class Event {
 			}
 
 			if(getEventName() == "Unknown event type") {
-				Log::error(row);
+				Log::warn(row);
 			} else {
 				Log::debug(row);
 			}
