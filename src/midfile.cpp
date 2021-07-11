@@ -156,17 +156,24 @@ Event Midfile::getEvent(Event *previous) {
 		event.totalTime = event.delta;
 	}
 	
-	if(getbyte() == 0xFF) {
-		event.meta = true;
-		event.type = getbyte();
-	} else {
-		pos--;
-		event.type = getbyte();
+	switch(getbyte()) {
+		case 0xFF:
+			event.meta = true;
+			event.type = getbyte();
+			break;
+		case 0xF0:
+			pos--;
+			event.sysex = true;
+			event.type = getbyte();
+			break;
+		default:
+			pos--;
+			event.type = getbyte();
 	}
 
 	int length;
 
-	if(event.meta) {
+	if(event.meta || event.sysex) {
 		try {
 			length = getVariableLengthValue();
 		} catch (VLVException ex) {
@@ -181,20 +188,6 @@ Event Midfile::getEvent(Event *previous) {
 			case event.TEMPO:
 				event.tempo = (getword() << 8) | getbyte();
 				break;
-			case event.SEQUENCE_NUMBER:
-			case event.TEXT_EVENT:
-			case event.COPYRIGHT:
-			case event.SEQUENCE_NAME:
-			case event.INSTRUMENT:
-			case event.LYRIC:
-			case event.MARKER_TEXT:
-			case event.CUE_POINT:
-			case event.MIDI_CHANNEL_PREFIX:
-			case event.END_OF_TRACK:
-			case event.SMPTE_OFFSET:
-			case event.TIME_SIGNATURE:
-			case event.KEY_SIGNATURE:
-			case event.SEQUENCER_SPECIFIC:
 			default:
 				pos += length; // ignore data
 				break;
@@ -214,7 +207,6 @@ Event Midfile::getEvent(Event *previous) {
 			case event.PROGRAM_CHANGE:
 			case event.CHANNEL_PRESSURE:
 			case event.PITCH_WHEEL_CHANGE:
-			case event.SYSTEM_MESSAGE:
 				pos += event.getEventLength(); // ignore data
 				break;
 		}

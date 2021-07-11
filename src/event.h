@@ -5,6 +5,7 @@ class Event {
 		uint32_t delta = 0;
 		int totalTime = 0;
 		bool meta = false;
+		bool sysex = false;
 		uint8_t type;
 
 		uint8_t note;
