@@ -156,7 +156,7 @@ Event Midfile::getEvent(Event *previous) {
 		event.totalTime = event.delta;
 	}
 	
-	switch(getbyte()) {
+	switch(int byte = getbyte()) {
 		case 0xFF:
 			event.meta = true;
 			event.type = getbyte();
@@ -167,8 +167,13 @@ Event Midfile::getEvent(Event *previous) {
 			event.type = getbyte();
 			break;
 		default:
-			pos--;
-			event.type = getbyte();
+			if(byte < 0x80) {
+				pos--;
+				event.type = previous->type;
+			} else {
+				pos--;
+				event.type = getbyte();
+			}
 	}
 
 	int length;
