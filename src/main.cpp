@@ -26,22 +26,22 @@ int main(int argc, char *argv[]) {
 
 	if(opts::file.empty()) {
 		Log::error("No file specified");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	Midfile midfile(opts::file);
 	if(midfile.is_open() == false) {
 		Log::error("File "  + opts::file + " could not be opened");
-		return 2;
+		return EXIT_FAILURE;
 	}
 	Log::debug("Opened " + opts::file);
 
 	if(midfile.read()) {
-		return 2;
+		return EXIT_FAILURE;
 	}
 
 	if(midfile.parseHeader()) {
-		return 3;
+		return EXIT_FAILURE;
 	}
 
 	Log::debug(std::string(133, '='));

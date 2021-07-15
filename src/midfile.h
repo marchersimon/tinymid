@@ -6,8 +6,6 @@
 
 #include "log.h"
 #include "event.h"
-#include "exception.h"
-
 
 class Midfile {
 	private:

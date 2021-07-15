@@ -35,7 +35,7 @@ int Midfile::read() { // reads file into memory
 		return 1;
 	}
 	file = (uint8_t*) malloc(size);
-	if(file == NULL) {
+	if(file == nullptr) {
 		Log::error("Memory could not be allocated");
 		return 1;
 	}
@@ -103,11 +103,11 @@ int Midfile::parseHeader() {
 std::vector<Event> Midfile::parseTrack() {
 	if(compareString("MTrk")) {
 		Log::error("Invalid header track");
-		// exit program
+		exit(EXIT_FAILURE);
 	}
 	pos += 4; // Ignore track length // TODO
 	std::vector<Event> track;
-	track.push_back(getEvent(NULL));
+	track.push_back(getEvent(nullptr));
 	while (track.back().type != 0x2F) {
 		track.push_back(getEvent(&track.back()));
 	}
@@ -149,11 +149,7 @@ Event Midfile::getEvent(Event *previous) {
 	int length;
 
 	if(event.meta || event.sysex) {
-		try {
-			length = getVariableLengthValue();
-		} catch (VLVException ex) {
-			Log::error("(" + Log::to_hex_string(ex.getPos()) + ") Variable length value cannot be longer than 4 bytes");
-		}
+		length = getVariableLengthValue();
 		if(event.getEventLength() != -1 && length != event.getEventLength()) {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
 		}
@@ -198,7 +194,7 @@ int Midfile::getVariableLengthValue() {
 		}
 		if(i == 4) {
 			Log::error("Variable length value cannot be longer than 4 bytes");
-			throw VLVException(pos - 4);
+			exit(EXIT_FAILURE);
 		}
 	}
 	return value;
