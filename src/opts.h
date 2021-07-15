@@ -1,7 +1,6 @@
 #pragma once
 
 #include <getopt.h>
-#include "log.h"
 
 namespace opts {
 

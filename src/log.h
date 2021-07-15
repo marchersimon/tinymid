@@ -1,5 +1,4 @@
-#ifndef LOG_H
-#define LOG_H
+#pragma once
 
 #include <iostream>
 
@@ -13,5 +12,3 @@ namespace Log {
 	void debug(std::string message);
 	std::string to_hex_string(uint32_t num, bool prefix = true);
 }
-
-#endif // LOG_H

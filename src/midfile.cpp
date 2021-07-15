@@ -59,6 +59,7 @@ int Midfile::read() { // reads file into memory
 	size = midstream.tellg();
 	midstream.seekg(0, std::ios::end);
 	size = (int)midstream.tellg() - size;
+	midstream.seekg(std::ios::beg);
 
 	if(size == 0) {
 		Log::error("File cannot be empty");
@@ -69,7 +70,6 @@ int Midfile::read() { // reads file into memory
 		Log::error("Memory could not be allocated");
 		return 1;
 	}
-	midstream.seekg(std::ios::beg);
 	midstream.read((char*)file, size);
 
 	midstream.close();
@@ -118,7 +118,7 @@ int Midfile::parseHeader() {
 	}
 
 	
-	division = (std::int16_t)getword(); // interpret uint16_t as int16_t
+	division = (int16_t)getword(); // interpret uint16_t as int16_t
 	Log::debug("Divisions: " + Log::to_hex_string(division) + ", " + std::to_string(division));
 	if(division < 0) {
 		Log::error("SMPTE compatible units not supported");
@@ -185,14 +185,12 @@ Event Midfile::getEvent(Event *previous) {
 		} catch (VLVException ex) {
 			Log::error("(" + Log::to_hex_string(ex.getPos()) + ") Variable length value cannot be longer than 4 bytes");
 		}
-		if(event.getEventLength() == -1 || length == event.getEventLength()) {
-			//Log::debug("    Length: " + std::to_string(length) + " Bytes");
-		} else {
+		if(event.getEventLength() != -1 && length != event.getEventLength()) {
 			Log::error("Wrong meta event length: expected " + std::to_string(event.getEventLength()) + " Bytes, got " + std::to_string(length) + " Bytes");
 		}
 		switch(event.type) {
 			case event.TEMPO:
-				event.tempo = (getword() << 8) | getbyte();
+				event.tempo = (getword() << 8) | getbyte(); // get 3 bytes
 				break;
 			default:
 				pos += length; // ignore data
@@ -232,7 +230,6 @@ int Midfile::getVariableLengthValue() {
 		if(i == 4) {
 			Log::error("Variable length value cannot be longer than 4 bytes");
 			throw VLVException(pos - 4);
-			// exit program
 		}
 	}
 	return value;

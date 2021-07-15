@@ -50,6 +50,5 @@ int main(int argc, char *argv[]) {
 		Log::debug(std::string(133, '='));
 	}
 	
-
 	return 0;
 }
