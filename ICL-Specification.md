@@ -7,11 +7,12 @@ This page documents the structure of an ICL file and how to properly docode it. 
 <table>
 <tr><td>"ICL"</td><td>3 Bytes</td></tr>
 <tr><td>Version number</td><td>2 Bytes</td></tr>
+<tr><td>max. number of notes</td><td>1 Byte</td></tr>
 <tr><td>Song name</td><td></td></tr>
 <tr><td>Instructions</td><td></td></tr>
 </table>
 
-Every ICL file starts with the literal ASCII characters "ICL" followed by the version number consisting of 2 bytes. Next the name of the song is specified as null-terminated string of ASCII characters, however it can also be empty. Lastly, there are all instructions to be interpreted.
+Every ICL file starts with the literal ASCII characters "ICL" followed by the version number consisting of 2 bytes. The next byte represents the maximal number of notes playing at the same time appearing in the file. Following, the name of the song is specified as null-terminated string of ASCII characters, however it can also be empty. Lastly, there are all instructions to be interpreted.
 
 ## Instructions
 
