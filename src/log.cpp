@@ -1,69 +1,53 @@
-#include <iostream>
+#include "log.h"
 
-namespace Log {
+void Log::setLevel(Level level) {
+	logLevel = level;
+}
 
-	enum Level : unsigned char {
-		Status, Error, Warn, Debug
-	};
+void Log::enableColor(bool c) {
+	color = c;
+}
 
-	namespace {
-		Level logLevel = Warn;
-		// 0 ... Status
-		// 1 ... Error
-		// 2 ... Warnings
-		// 3 ... Debug
-		bool color = true;
+void Log::status(std::string message) {
+	std::cout << message << std::endl;
+}
+
+void Log::error(std::string message) {
+	if(logLevel >= Error) {
+		if(color) std::cout << "\033[;31m"; // red
+		std::cout <<  message;
+		if(color) std::cout << "\033[1;m";
+		std::cout << std::endl;
 	}
+}
 
-	void setLevel(Level level) {
-		logLevel = level;
+void Log::warn(std::string message) {
+	if(logLevel >= Warn) {
+		if(color) std::cout << "\033[;33m"; // orange
+		std::cout <<  message;
+		if(color) std::cout << "\033[1;m";
+		std::cout << std::endl;
 	}
+}
 
-	void enableColor(bool c) {
-		color = c;
+void Log::debug(std::string message) {
+	if(logLevel >= Debug) {
+		if(color) std::cout << "\033[;90m"; // grey
+		std::cout <<  message;
+		if(color) std::cout << "\033[1;m";
+		std::cout << std::endl;
 	}
+}
 
-	void status(std::string message) {
-		std::cout << message << std::endl;
+std::string Log::to_hex_string(uint32_t num, bool prefix) {
+	char s[9];
+	sprintf(s, "%X", num);
+	std::string str = s;
+	if(str.size() % 2) {
+		str.insert(0, "0");
 	}
-
-	void error(std::string message) {
-		if(logLevel >= Error) {
-			if(color) std::cout << "\033[;31m"; // red
-			std::cout <<  message;
-			if(color) std::cout << "\033[1;m";
-			std::cout << std::endl;
-		}
+	if(prefix) {
+		str.insert(0, "0x");
 	}
-
-	void warn(std::string message) {
-		if(logLevel >= Warn) {
-			if(color) std::cout << "\033[;33m"; // orange
-			std::cout <<  message;
-			if(color) std::cout << "\033[1;m";
-			std::cout << std::endl;
-		}
-	}
-
-	void debug(std::string message) {
-		if(logLevel >= Debug) {
-			if(color) std::cout << "\033[;90m"; // grey
-			std::cout <<  message;
-			if(color) std::cout << "\033[1;m";
-			std::cout << std::endl;
-		}
-	}
-
-	std::string to_hex_string(uint32_t num, bool prefix = true) {
-		char s[9];
-		sprintf(s, "%X", num);
-		std::string str = s;
-		if(str.size() % 2) {
-			str.insert(0, "0");
-		}
-		if(prefix) {
-			str.insert(0, "0x");
-		}
-		return str;
-	}
+	return str;
 }

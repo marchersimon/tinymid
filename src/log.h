@@ -3,7 +3,19 @@
 #include <iostream>
 
 namespace Log {
-	enum Level : unsigned char {Status, Error, Warn, Debug};
+
+	enum Level : unsigned char {
+		Status = 0,
+		Error = 1,
+		Warn = 2,
+		Debug = 3
+	};
+
+	namespace {
+		Level logLevel = Warn;
+		bool color = true;
+	}
+
 	void setLevel(Level level);
 	void enableColor(bool c);
 	void status(std::string message);
