@@ -1,6 +1,9 @@
 #include "midfile.h"
 
-Midfile::Midfile(std::string filename) {
+using std::string;
+using std::vector;
+
+Midfile::Midfile(const string & filename) {
 	midstream.open(filename, std::ios::binary);
 }
 
@@ -24,7 +27,8 @@ bool Midfile::is_open() {
 	return midstream.is_open();
 }
 
-int Midfile::read() { // reads file into memory
+// reads the file into a buffer
+int Midfile::read() {
 	size = midstream.tellg();
 	midstream.seekg(0, std::ios::end);
 	size = (int)midstream.tellg() - size;
@@ -100,13 +104,13 @@ int Midfile::parseHeader() {
 	return 0;
 }
 
-std::vector<Event> Midfile::parseTrack() {
+vector<Event> Midfile::parseTrack() {
 	if(compareString("MTrk")) {
 		Log::error("Invalid header track");
 		exit(EXIT_FAILURE);
 	}
 	pos += 4; // Ignore track length // TODO
-	std::vector<Event> track;
+	vector<Event> track;
 	track.push_back(getEvent(nullptr));
 	while (track.back().type != 0x2F) {
 		track.push_back(getEvent(&track.back()));
@@ -114,15 +118,15 @@ std::vector<Event> Midfile::parseTrack() {
 	return track;
 }
 
-Event Midfile::getEvent(Event *previous) {
+Event Midfile::getEvent(const Event *previous) {
 	Event event;
 	int startPos = pos;
 
 	event.delta = getVariableLengthValue();
 	if(previous) {
-		event.totalTime = previous->totalTime + event.delta;
+		event.absoluteTime = previous->absoluteTime + event.delta;
 	} else {
-		event.totalTime = event.delta;
+		event.absoluteTime = event.delta;
 	}
 	
 	switch(int byte = getbyte()) {
@@ -131,16 +135,16 @@ Event Midfile::getEvent(Event *previous) {
 			event.type = getbyte();
 			break;
 		case 0xF0:
-			pos--;
+			rewind();
 			event.sysex = true;
 			event.type = getbyte();
 			break;
 		default:
 			if(byte < 0x80) {
-				pos--;
+				rewind();
 				event.type = previous->type;
 			} else {
-				pos--;
+				rewind();
 				event.type = getbyte();
 				event.stripChannel();
 			}
@@ -157,9 +161,13 @@ Event Midfile::getEvent(Event *previous) {
 			case event.TEMPO:
 				event.tempo = (getword() << 8) | getbyte(); // get 3 bytes
 				break;
+			case event.SEQUENCE_NAME:
+				for(int i = 0; i < length; i++) {
+					event.name += (char)getbyte();
+				}
+				break;
 			default:
 				pos += length; // ignore data
-				break;
 		}
 	} else {
 		switch(event.type) {
@@ -171,8 +179,11 @@ Event Midfile::getEvent(Event *previous) {
 					event.type = event.NOTE_OFF;
 				}
 				break;
-			case event.KEY_PRESSURE:
 			case event.CONTROL_CHANGE:
+				event.device = getbyte();
+				event.value = getbyte();
+				break;
+			case event.KEY_PRESSURE:
 			case event.PROGRAM_CHANGE:
 			case event.CHANNEL_PRESSURE:
 			case event.PITCH_WHEEL_CHANGE:
@@ -182,6 +193,10 @@ Event Midfile::getEvent(Event *previous) {
 	}
 	event.print(startPos, file, pos - startPos);
 	return event;
+}
+
+void Midfile::rewind(const int & n) {
+	pos -= n;
 }
 
 int Midfile::getVariableLengthValue() {
@@ -200,9 +215,9 @@ int Midfile::getVariableLengthValue() {
 	return value;
 }
 
-int Midfile::compareString(std::string s) {
+int Midfile::compareString(const string & s) {
 	
-	for (char c : s) {
+	for (const char & c : s) {
 		if(c != file[pos++]) {
 			return 1;
 		}

@@ -4,17 +4,22 @@
 
 #include "log.h"
 
+using std::string;
+
 class Event {
 	public:
 		uint32_t delta = 0;
-		int totalTime = 0;
+		int absoluteTime = 0;
 		bool meta = false;
 		bool sysex = false;
 		uint8_t type;
 
+		std::string name;
 		uint8_t note;
 		uint8_t velocity;
 		int tempo;
+		uint8_t device;
+		uint8_t value;
 
 		enum event {
 			// MIDI
@@ -42,6 +47,10 @@ class Event {
 			TIME_SIGNATURE = 0x58,
 			KEY_SIGNATURE = 0x59,
 			SEQUENCER_SPECIFIC = 0x7F,
+		};
+
+		enum controler_message {
+			PEDAL = 0x40,
 		};
 
 		std::string getEventName();

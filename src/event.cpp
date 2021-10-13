@@ -97,7 +97,7 @@ void Event::print(int pos, uint8_t *file, int len) {
     row += formatColumn(content, 39);
     //row += content;
     row += "| ";
-    row += formatColumn(std::to_string(totalTime), 6);
+    row += formatColumn(std::to_string(absoluteTime), 6);
     row += " | ";
     row += formatColumn(std::to_string(delta), 6);
     row += " | ";
@@ -114,8 +114,30 @@ void Event::print(int pos, uint8_t *file, int len) {
         row += formatColumn("Note " + getNoteName(), 9);
         row += "at velocity " + std::to_string(velocity);
     } else if(type == TEMPO) {
-        row += formatColumn(std::to_string(tempo), 6);
-        row += " us per quarter note";
+        if(tempo % 1000000 == 0) {
+            row += std::to_string(tempo / 1000000);
+            row += " seconds";
+        } else if(tempo % 1000 == 0) {
+            row += std::to_string(tempo / 1000);
+            row += " ms";
+        } else {
+            row += std::to_string(tempo);
+            row += " us";
+        }
+        row += " per quarter note";
+        //row += formatColumn(std::to_string(tempo), 6);
+        //row += " us per quarter note";
+    } else if(type == SEQUENCE_NAME) {
+        row += name;
+    } else if(type == CONTROL_CHANGE) {
+        if(device == PEDAL) {
+            row += "Sustain Pedal";
+            if(value < 64) {
+                row += " off";
+            } else {
+                row += " on";
+            }
+        }
     }
 
     Log::debug(row);

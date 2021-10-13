@@ -1,18 +1,18 @@
 #include "log.h"
 
-void Log::setLevel(Level level) {
+void Log::setLevel(const Level & level) {
 	logLevel = level;
 }
 
-void Log::enableColor(bool c) {
+void Log::enableColor(const bool & c) {
 	color = c;
 }
 
-void Log::status(std::string message) {
+void Log::status(const std::string & message) {
 	std::cout << message << std::endl;
 }
 
-void Log::error(std::string message) {
+void Log::error(const std::string & message) {
 	if(logLevel >= Error) {
 		if(color) std::cout << "\033[;31m"; // red
 		std::cout <<  message;
@@ -21,7 +21,7 @@ void Log::error(std::string message) {
 	}
 }
 
-void Log::warn(std::string message) {
+void Log::warn(const std::string & message) {
 	if(logLevel >= Warn) {
 		if(color) std::cout << "\033[;33m"; // orange
 		std::cout <<  message;
@@ -30,7 +30,7 @@ void Log::warn(std::string message) {
 	}
 }
 
-void Log::debug(std::string message) {
+void Log::debug(const std::string & message) {
 	if(logLevel >= Debug) {
 		if(color) std::cout << "\033[;90m"; // grey
 		std::cout <<  message;
@@ -39,7 +39,7 @@ void Log::debug(std::string message) {
 	}
 }
 
-std::string Log::to_hex_string(uint32_t num, bool prefix) {
+std::string Log::to_hex_string(const uint32_t & num, const bool & prefix) {
 	char s[9];
 	sprintf(s, "%X", num);
 	std::string str = s;
