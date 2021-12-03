@@ -21,6 +21,10 @@ class Event {
 		uint8_t device;
 		uint8_t value;
 
+		int startPos;
+		int totalLenght;
+		uint8_t* file;
+
 		enum event {
 			// MIDI
 			NOTE_OFF = 0x80,
@@ -58,6 +62,6 @@ class Event {
 		std::string getNoteName();
 		void stripChannel();
 		int getChannel();
-		void print(int pos, uint8_t *file, int len);
+		void print();
 		std::string formatColumn(std::string s, int width);
 };

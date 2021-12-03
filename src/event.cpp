@@ -82,13 +82,13 @@ int Event::getChannel() {
     return type & 0x0F;
 }
 
-void Event::print(int pos, uint8_t *file, int len) {
+void Event::print() {
     std::string row;
-    row += formatColumn(Log::to_hex_string(pos), 6);
+    row += formatColumn(Log::to_hex_string(startPos), 6);
     row += " | ";
     std::string content;
-    for(int i = 0; i < len; i++) {
-        content += Log::to_hex_string(file[pos + i], false);
+    for(int i = 0; i < totalLenght; i++) {
+        content += Log::to_hex_string(file[startPos + i], false);
         content += " ";
     }
     if(content.length() > 39) {

@@ -5,6 +5,7 @@
 #include "log.h"
 #include "opts.h"
 #include "event.h"
+#include "icl.h"
 
 void printHelp() {
 	std::cout << 
@@ -55,11 +56,26 @@ int main(int argc, char *argv[]) {
 
 	Log::debug(std::string(133, '='));
 	for(int i = 0; i < midfile.numberOfTracks; i++) {
-		midfile.parseTrack();
+		midfile.tracks.push_back(midfile.parseTrack());
 		Log::debug(std::string(133, '='));
 	}
 
-	
+	midfile.mergeTracks();
+
+	ICL icl;
+	icl.name = midfile.getSongName();
+
+	midfile.filterEvents();
+	midfile.fixNoteEvents();
+	icl.maxNotes = midfile.getNumberOfSimultaneousNotes();
+
+	for(Event & event : midfile.sortedEvents) {
+		event.print();
+	}
+
+	icl.createICL(midfile);
+	icl.print();
+	icl.save();
 	
 	return 0;
 }

@@ -30,8 +30,15 @@ class Midfile {
 	public:
 		Midfile(const string & filename);
 		int numberOfTracks;
+		vector<vector<Event>> tracks;
+		vector<Event> sortedEvents;
+		void mergeTracks();
 		bool is_open();
 		int read();
 		int parseHeader();
 		vector<Event> parseTrack();
+		void filterEvents();
+		string getSongName();
+		void fixNoteEvents();
+		int getNumberOfSimultaneousNotes();
 };

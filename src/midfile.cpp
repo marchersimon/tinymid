@@ -118,9 +118,33 @@ vector<Event> Midfile::parseTrack() {
 	return track;
 }
 
+void Midfile::mergeTracks() {
+	int nextTrack;
+	int smallest;
+	while(1) {
+		smallest = tracks[0][0].absoluteTime;
+		nextTrack = 0;
+		for(int i = 1; i < tracks.size(); i++) {
+			if(tracks[i][0].absoluteTime < smallest) {
+				smallest = tracks[i][0].absoluteTime;
+				nextTrack = i;
+			}
+		}
+		sortedEvents.push_back(tracks[nextTrack][0]);
+		tracks[nextTrack].erase(tracks[nextTrack].begin());
+		if(tracks[nextTrack].size() == 0) {
+			tracks.erase(tracks.begin() + nextTrack);
+		}
+		if(tracks.size() == 0) {
+			break;
+		}
+	}
+}
+
 Event Midfile::getEvent(const Event *previous) {
 	Event event;
-	int startPos = pos;
+	event.startPos = pos;
+	event.file = file;
 
 	event.delta = getVariableLengthValue();
 	if(previous) {
@@ -175,9 +199,6 @@ Event Midfile::getEvent(const Event *previous) {
 			case event.NOTE_OFF:
 				event.note = getbyte();
 				event.velocity = getbyte();
-				if(event.type == event.NOTE_ON && event.velocity == 0) {
-					event.type = event.NOTE_OFF;
-				}
 				break;
 			case event.CONTROL_CHANGE:
 				event.device = getbyte();
@@ -191,8 +212,72 @@ Event Midfile::getEvent(const Event *previous) {
 				break;
 		}
 	}
-	event.print(startPos, file, pos - startPos);
+	event.totalLenght = pos - event.startPos;
+	event.print();
 	return event;
+}
+
+void Midfile::filterEvents() {
+	for(int i = sortedEvents.size() - 1; i >= 0; i--) {
+		const Event & event = sortedEvents[i];
+		
+		if(!(event.type == event.NOTE_ON       ||
+			 event.type == event.NOTE_OFF      ||
+			 event.type == event.TEMPO)) {
+			sortedEvents.erase(sortedEvents.begin() + i);
+		}
+	}
+}
+
+string Midfile::getSongName() {
+	vector<string> names;
+	for(const Event & event : sortedEvents) {
+		if(event.type == event.SEQUENCE_NAME) {
+			names.push_back(event.name);
+		}
+	}
+	if(names.size() == 1) {
+		return names[0];
+	}
+	Log::status("Multiple names found. Please select one:");
+	for(int i = 0; i < names.size(); i++) {
+		Log::status("  (" + std::to_string(i + 1) + ") " + names[i]);
+	}
+
+	int n;
+	std::cin >> n;
+	return names[n - 1];
+}
+
+void Midfile::fixNoteEvents() {
+	for(Event & event : sortedEvents) {
+		if(event.type == event.NOTE_ON && event.velocity == 0) {
+			event.type = event.NOTE_OFF;
+		}
+	}
+}
+
+int Midfile::getNumberOfSimultaneousNotes() {
+	vector<uint8_t> notes;
+	int n = 0;
+	int max = 0;
+	for(const Event & event : sortedEvents) {
+		if(event.type == event.NOTE_ON) {
+			notes.push_back(event.note);
+			n++;
+			if(n > max) {
+				max = n;
+			}
+		} else if(event.type == event.NOTE_OFF) {
+			for(int i = 0; i < notes.size(); i++)  {
+				if(notes[i] == event.note) {
+					notes.erase(notes.begin() + i);
+					n--;
+				}
+			}
+		}
+	}
+	return max;
 }
 
 void Midfile::rewind(const int & n) {
