@@ -30,7 +30,7 @@ uint32_t deltaTime = 0;
 for(int i = 0; i < 4; i++) {
     uint8_t byte = getNextByte();
     deltaTime = (value << 7) | (byte & 0x7F);
-    if(byte & 0x80) {
+    if(~byte & 0x80) {
         break;
     }
 }
@@ -41,8 +41,9 @@ Each **instruction type** has a specific amount of data following. It can be one
 <table>
 <tr><th>Event</th><th>Description</th></tr>
 <tr><td>0000vvvv 0kkkkkkk</td><td>Note on</br>vvvv represents the velocity (volume) of the note</br>kkkkkkk represents the note (key) number<sup><a href="#table-of-note-numbers">[1]</sup></td></tr>
-<tr><td>00010000 0kkkkkkk</td><td>Note off</br>kkkkkkk represents the note (key) number<sup><a href="#table-of-note-numbers">[1]</sup></td></tr>
-<tr><td>00100000 tempo</br></td><td>Set tempo</br>tempo contains some timing information yet to be worked out</td></tr>
+<tr><td>0001vvvv 0kkkkkkk</td><td>Note off</br>vvvv represents the velocity (sustain) of the note</br>kkkkkkk represents the note (key) number<sup><a href="#table-of-note-numbers">[1]</sup></td></tr>
+<tr><td>00100000 tempo</br></td><td>Set tempo</br>3 byte tempo copied from the midi file</td></tr>
+<tr><td>11110000</br></td><td>End of file</br></td></tr>
 </table>
 
 ## Table of note numbers

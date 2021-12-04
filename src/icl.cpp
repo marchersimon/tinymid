@@ -56,8 +56,11 @@ void ICL::createICL(const Midfile & midfile) {
         case event.TEMPO:
             write(0x20, 1);
             write(event.tempo, 3);
+            break;
         }
     }
+    write(0x00, 1); // delta
+    write(0xF0, 1); // END_OF_FILE
 }
 
 void ICL::save() {
