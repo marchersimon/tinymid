@@ -55,7 +55,7 @@ void ICL::createICL(const Midfile & midfile) {
             break;
         case event.TEMPO:
             write(0x20, 1);
-            write(event.tempo, 3);
+            write(event.tempo / midfile.division, 3);
             break;
         }
     }

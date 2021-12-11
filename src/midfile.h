@@ -17,7 +17,6 @@ class Midfile {
 		int size;
 		int pos = 0;
 		int format;
-		int division;
 
 		uint32_t getdword();
 		uint16_t getword();
@@ -28,6 +27,7 @@ class Midfile {
 		int compareString(const string & s);
 
 	public:
+		int division;
 		Midfile(const string & filename);
 		int numberOfTracks;
 		vector<vector<Event>> tracks;

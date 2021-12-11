@@ -42,7 +42,7 @@ Each **instruction type** has a specific amount of data following. It can be one
 <tr><th>Event</th><th>Description</th></tr>
 <tr><td>0000vvvv 0kkkkkkk</td><td>Note on</br>vvvv represents the velocity (volume) of the note</br>kkkkkkk represents the note (key) number<sup><a href="#table-of-note-numbers">[1]</sup></td></tr>
 <tr><td>0001vvvv 0kkkkkkk</td><td>Note off</br>vvvv represents the velocity (sustain) of the note</br>kkkkkkk represents the note (key) number<sup><a href="#table-of-note-numbers">[1]</sup></td></tr>
-<tr><td>00100000 tempo</br></td><td>Set tempo</br>3 byte tempo copied from the midi file</td></tr>
+<tr><td>00100000 tempo</br></td><td>Set tempo</br>3 byte tempo in microseconds per MIDI-tick</td></tr>
 <tr><td>11110000</br></td><td>End of file</br></td></tr>
 </table>
 
