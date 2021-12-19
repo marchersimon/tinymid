@@ -1,32 +1,15 @@
-#include <iostream>
-#include <fstream>
+#include <string>
+#include <vector>
 
-#include "midfile.h"
-#include "log.h"
-#include "opts.h"
-#include "event.h"
-#include "icl.h"
-
-void printHelp() {
-	std::cout << 
-		"Usage: mid2icl [options] [file]\n"
-		"\n"
-		"Options:\n"
-		"  -h, --help       Display this help\n"
-		"  -d, --debug      Show debug messages\n"
-		"  -n, --no-color   No colors" << std::endl;
-}
+#include "opts.hpp"
+#include "midiReader.hpp"
+#include "midifile.hpp"
 
 int main(int argc, char *argv[]) {
 
-	opts::parse(argc, argv);
+    opts::parse(argc, argv);
 
-	if(opts::help  == true ) {
-		printHelp();
-		return 0;
-	}
-
-	if(opts::debug == true ) {
+    if(opts::debug == true ) {
 		Log::setLevel(Log::Debug);
 	}
 		
@@ -39,43 +22,10 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	Midfile midfile(opts::file);
-	if(midfile.is_open() == false) {
-		Log::error("File "  + opts::file + " could not be opened");
-		return 1;
-	}
-	Log::debug("Opened " + opts::file);
+    MIDIReader mreader(opts::file);
 
-	if(midfile.read()) {
-		return 1;
-	}
+    MIDIfile midifile = mreader.parseFile();
 
-	if(midfile.parseHeader()) {
-		return 1;
-	}
+    return 0;
 
-	Log::debug(std::string(133, '='));
-	for(int i = 0; i < midfile.numberOfTracks; i++) {
-		midfile.tracks.push_back(midfile.parseTrack());
-		Log::debug(std::string(133, '='));
-	}
-
-	midfile.mergeTracks();
-
-	ICL icl;
-	icl.name = midfile.getSongName();
-
-	midfile.filterEvents();
-	midfile.fixNoteEvents();
-	icl.maxNotes = midfile.getNumberOfSimultaneousNotes();
-
-	for(Event & event : midfile.sortedEvents) {
-		event.print();
-	}
-
-	icl.createICL(midfile);
-	icl.print();
-	icl.save();
-	
-	return 0;
 }

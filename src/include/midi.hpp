@@ -1,31 +1,11 @@
 #pragma once
 
-#include <iostream>
-
-#include "log.h"
+#include <string>
 
 using std::string;
 
-class Event {
-	public:
-		uint32_t delta = 0;
-		int absoluteTime = 0;
-		bool meta = false;
-		bool sysex = false;
-		uint8_t type;
-
-		std::string name;
-		uint8_t note;
-		uint8_t velocity;
-		int tempo;
-		uint8_t device;
-		uint8_t value;
-
-		int startPos;
-		int totalLenght;
-		uint8_t* file;
-
-		enum event {
+namespace MIDI {
+    enum event {
 			// MIDI
 			NOTE_OFF = 0x80,
 			NOTE_ON = 0x90,
@@ -53,15 +33,13 @@ class Event {
 			SEQUENCER_SPECIFIC = 0x7F,
 		};
 
-		enum controler_message {
-			PEDAL = 0x40,
-		};
+    enum controler_message {
+		PEDAL = 0x40,
+	};
 
-		std::string getEventName();
-		int getEventLength();
-		std::string getNoteName();
-		void stripChannel();
-		int getChannel();
-		void print();
-		std::string formatColumn(std::string s, int width);
+    int getEventLength(event type);
+
+    string getEventName(event type);
+
+    string getNoteName(int note);
 };

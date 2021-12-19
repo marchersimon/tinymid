@@ -1,2 +1,2 @@
 build:
-	g++ src/*.cpp -o mid2icl
+	g++ src/*.cpp -o smid -Isrc/include
