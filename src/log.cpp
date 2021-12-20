@@ -53,6 +53,7 @@ string Log::to_hex_string(const uint32_t & num, bool prefix = true) {
 	return str;
 }
 
+
 void Log::debugEvent(Event event, int startPos, int endPos, const vector<uint8_t> & file) {
 	string line;
 
@@ -113,6 +114,56 @@ void Log::debugEvent(Event event, int startPos, int endPos, const vector<uint8_t
 
     Log::debug(line);
 }
+
+
+
+void Log::debugEvent(Event event) {
+	string line;
+
+    line += addPadding(to_string(event.absoluteTime), 6);
+    line += " | ";
+    line += addPadding(to_string(event.deltaTime), 6);
+    line += " | ";
+    line += addPadding(MIDI::getEventName(event.type), 25);
+    line += " | ";
+    if(event.isMeta) {
+        line += "          ";
+    } else {
+        line += addPadding("Channel " + to_string(event.channel), 10);
+    }
+
+    line += " | ";
+    if(event.type == MIDI::event::NOTE_ON || event.type == MIDI::event::NOTE_OFF) {
+        line += addPadding("Note " + MIDI::getNoteName(event.note), 9);
+        line += "at velocity " + to_string(event.velocity);
+    } else if(event.type == MIDI::event::TEMPO) {
+        if(event.tempo % 1000000 == 0) {
+            line += to_string(event.tempo / 1000000);
+            line += " seconds";
+        } else if(event.tempo % 1000 == 0) {
+            line += to_string(event.tempo / 1000);
+            line += " ms";
+        } else {
+            line += to_string(event.tempo);
+            line += " us";
+        }
+        line += " per quarter note";
+    } else if(event.type == MIDI::event::SEQUENCE_NAME) {
+        line += event.seqName;
+    } else if(event.type == MIDI::event::CONTROL_CHANGE) {
+        if(event.ccdevice == MIDI::controler_message::PEDAL) {
+            line += "Sustain Pedal";
+            if(event.ccvalue < 64) {
+                line += " off";
+            } else {
+                line += " on";
+            }
+        }
+    }
+
+    Log::debug(line);
+}
+
 
 string Log::addPadding(string str, int width) {
     if(width > str.size()) {

@@ -26,6 +26,10 @@ int main(int argc, char *argv[]) {
 
     MIDIfile midifile = mreader.parseFile();
 
+	midifile.mergeTracks();
+
+	
+
     return 0;
 
 }

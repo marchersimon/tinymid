@@ -8,6 +8,7 @@
 
 using std::string;
 using std::to_string;
+using std::vector;
 
 namespace Log {
 
@@ -32,5 +33,7 @@ namespace Log {
 	string to_hex_string(const uint32_t & num, bool prefix);
 
 	void debugEvent(Event event, int startPos, int endPos, const vector<uint8_t> & file);
+	void debugEvent(Event event);
+
 	string addPadding(string str, int width);
 }
