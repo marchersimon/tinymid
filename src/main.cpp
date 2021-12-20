@@ -4,6 +4,7 @@
 #include "opts.hpp"
 #include "midiReader.hpp"
 #include "midifile.hpp"
+#include "midiWriter.hpp"
 
 int main(int argc, char *argv[]) {
 
@@ -27,8 +28,15 @@ int main(int argc, char *argv[]) {
     MIDIfile midifile = mreader.parseFile();
 
 	midifile.mergeTracks();
+	midifile.removeUnwantedEvents();
+	midifile.removeChannels();
+	midifile.fixNoteEvents();
 
-	
+	midifile.print();
+
+	MIDIWriter mwriter(midifile);
+	mwriter.writeFile();
+	mwriter.saveFile();
 
     return 0;
 

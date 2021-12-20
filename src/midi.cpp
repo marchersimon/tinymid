@@ -1,6 +1,6 @@
 #include "midi.hpp"
 
-int MIDI::getEventLength(event type) {
+int MIDI::getEventLength(eventType type) {
     switch(type) {
         // MIDI
         case KEY_PRESSURE:          return 2; break;
@@ -20,7 +20,7 @@ int MIDI::getEventLength(event type) {
     return -1;
 }
 
-string MIDI::getEventName(event type) {
+string MIDI::getEventName(eventType type) {
     if((type & 0xF0) == 0xF0) {
         return "System message";
     }

@@ -5,8 +5,8 @@
 #include <fstream>
 #include <iterator>
 
-#include "log.hpp"
 #include "midifile.hpp"
+#include "log.hpp"
 #include "midi.hpp"
 
 using std::string;

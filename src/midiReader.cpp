@@ -23,7 +23,7 @@ MIDIReader::MIDIReader(string filepath) {
 MIDIfile MIDIReader::parseFile() {
     MIDIfile midifile;
     parseHeader(midifile);
-    for(int i = 0; i < midifile.getNumberOfTracks(); i++) {
+    for(int i = 0; i < midifile.numberOfTracks; i++) {
         midifile.addTrack(parseTrack());
     }
     return midifile;
@@ -52,13 +52,13 @@ void MIDIReader::parseHeader(MIDIfile & midifile) {
 		default:
 			Log::error("Invalid file format: " + to_string(format));
 	}
-    midifile.setFormat(format);
+    midifile.format = format;
 
     int numberOfTracks = nextWord();
-    midifile.setNumberOfTracks(numberOfTracks);
+    midifile.numberOfTracks = numberOfTracks;
     
     int division = nextWord();
-    midifile.setDivision(division);
+    midifile.division = division;
 }
 
 vector<Event> MIDIReader::parseTrack() {
@@ -91,17 +91,17 @@ Event MIDIReader::parseEvent(const Event & previous, bool first) {
     switch(int byte = nextByte()) {
 		case 0xFF:
 			event.isMeta = true;
-			event.type = (MIDI::event)nextByte();
+			event.type = (MIDI::eventType)nextByte();
 			break;
 		case 0xF0:
 			event.isSysex = true;
-			event.type = (MIDI::event)nextByte();
+			event.type = (MIDI::eventType)nextByte();
 			break;
 		default:
 			if(byte < 0x80) {
 				event.type = previous.type;
 			} else {
-				event.type = (MIDI::event)(prevByte() & 0xF0);
+				event.type = (MIDI::eventType)(prevByte() & 0xF0);
                 event.channel = (prevByte() & 0x0F);
 			}
 	}
@@ -114,10 +114,10 @@ Event MIDIReader::parseEvent(const Event & previous, bool first) {
 			Log::error("Wrong meta event length: expected " + std::to_string(MIDI::getEventLength(event.type)) + " Bytes, got " + std::to_string(eventLength) + " Bytes");
 		}
 		switch(event.type) {
-			case MIDI::event::TEMPO:
+			case MIDI::eventType::TEMPO:
 				event.tempo = (nextWord() << 8) | nextByte(); // get 3 bytes
 				break;
-			case MIDI::event::SEQUENCE_NAME:
+			case MIDI::eventType::SEQUENCE_NAME:
 				for(int i = 0; i < eventLength; i++) {
 					event.seqName += (char)nextByte();
 				}
@@ -127,19 +127,19 @@ Event MIDIReader::parseEvent(const Event & previous, bool first) {
 		}
 	} else {
 		switch(event.type) {
-			case MIDI::event::NOTE_ON:
-			case MIDI::event::NOTE_OFF:
+			case MIDI::eventType::NOTE_ON:
+			case MIDI::eventType::NOTE_OFF:
 				event.note = nextByte();
 				event.velocity = nextByte();
 				break;
-			case MIDI::event::CONTROL_CHANGE:
+			case MIDI::eventType::CONTROL_CHANGE:
 				event.ccdevice = nextByte();
 				event.ccvalue = nextByte();
 				break;
-			case MIDI::event::KEY_PRESSURE:
-			case MIDI::event::PROGRAM_CHANGE:
-			case MIDI::event::CHANNEL_PRESSURE:
-			case MIDI::event::PITCH_WHEEL_CHANGE:
+			case MIDI::eventType::KEY_PRESSURE:
+			case MIDI::eventType::PROGRAM_CHANGE:
+			case MIDI::eventType::CHANNEL_PRESSURE:
+			case MIDI::eventType::PITCH_WHEEL_CHANGE:
 				pos += getEventLength(event.type); // ignore data
 				break;
 		}

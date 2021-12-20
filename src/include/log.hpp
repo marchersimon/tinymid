@@ -1,9 +1,10 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include <exception>
 
-#include "midifile.hpp"
+#include "event.hpp"
 #include "midi.hpp"
 
 using std::string;

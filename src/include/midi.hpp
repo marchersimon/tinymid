@@ -5,7 +5,7 @@
 using std::string;
 
 namespace MIDI {
-    enum event {
+    enum eventType {
 			// MIDI
 			NOTE_OFF = 0x80,
 			NOTE_ON = 0x90,
@@ -37,9 +37,9 @@ namespace MIDI {
 		PEDAL = 0x40,
 	};
 
-    int getEventLength(event type);
+    int getEventLength(eventType type);
 
-    string getEventName(event type);
+    string getEventName(eventType type);
 
     string getNoteName(int note);
 };

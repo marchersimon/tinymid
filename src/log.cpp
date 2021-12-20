@@ -84,10 +84,10 @@ void Log::debugEvent(Event event, int startPos, int endPos, const vector<uint8_t
     }
 
     line += " | ";
-    if(event.type == MIDI::event::NOTE_ON || event.type == MIDI::event::NOTE_OFF) {
+    if(event.type == MIDI::eventType::NOTE_ON || event.type == MIDI::eventType::NOTE_OFF) {
         line += addPadding("Note " + MIDI::getNoteName(event.note), 9);
         line += "at velocity " + to_string(event.velocity);
-    } else if(event.type == MIDI::event::TEMPO) {
+    } else if(event.type == MIDI::eventType::TEMPO) {
         if(event.tempo % 1000000 == 0) {
             line += to_string(event.tempo / 1000000);
             line += " seconds";
@@ -99,9 +99,9 @@ void Log::debugEvent(Event event, int startPos, int endPos, const vector<uint8_t
             line += " us";
         }
         line += " per quarter note";
-    } else if(event.type == MIDI::event::SEQUENCE_NAME) {
+    } else if(event.type == MIDI::eventType::SEQUENCE_NAME) {
         line += event.seqName;
-    } else if(event.type == MIDI::event::CONTROL_CHANGE) {
+    } else if(event.type == MIDI::eventType::CONTROL_CHANGE) {
         if(event.ccdevice == MIDI::controler_message::PEDAL) {
             line += "Sustain Pedal";
             if(event.ccvalue < 64) {
@@ -112,7 +112,11 @@ void Log::debugEvent(Event event, int startPos, int endPos, const vector<uint8_t
         }
     }
 
-    Log::debug(line);
+    if(MIDI::getEventName(event.type) == "Unknown event type") {
+        Log::warn(line);
+    } else {
+        Log::debug(line);
+    }
 }
 
 
@@ -133,10 +137,10 @@ void Log::debugEvent(Event event) {
     }
 
     line += " | ";
-    if(event.type == MIDI::event::NOTE_ON || event.type == MIDI::event::NOTE_OFF) {
+    if(event.type == MIDI::eventType::NOTE_ON || event.type == MIDI::eventType::NOTE_OFF) {
         line += addPadding("Note " + MIDI::getNoteName(event.note), 9);
         line += "at velocity " + to_string(event.velocity);
-    } else if(event.type == MIDI::event::TEMPO) {
+    } else if(event.type == MIDI::eventType::TEMPO) {
         if(event.tempo % 1000000 == 0) {
             line += to_string(event.tempo / 1000000);
             line += " seconds";
@@ -148,9 +152,9 @@ void Log::debugEvent(Event event) {
             line += " us";
         }
         line += " per quarter note";
-    } else if(event.type == MIDI::event::SEQUENCE_NAME) {
+    } else if(event.type == MIDI::eventType::SEQUENCE_NAME) {
         line += event.seqName;
-    } else if(event.type == MIDI::event::CONTROL_CHANGE) {
+    } else if(event.type == MIDI::eventType::CONTROL_CHANGE) {
         if(event.ccdevice == MIDI::controler_message::PEDAL) {
             line += "Sustain Pedal";
             if(event.ccvalue < 64) {
@@ -161,7 +165,11 @@ void Log::debugEvent(Event event) {
         }
     }
 
-    Log::debug(line);
+    if(MIDI::getEventName(event.type) == "Unknown event type") {
+        Log::warn(line);
+    } else {
+        Log::debug(line);
+    }
 }
 
 
