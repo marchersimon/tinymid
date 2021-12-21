@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <filesystem>
 #include <math.h>
 
 #include "midifile.hpp"

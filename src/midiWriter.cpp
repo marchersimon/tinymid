@@ -91,4 +91,7 @@ void MIDIWriter::saveFile() {
         Log::error("Could not open output stream");
     }
     outstream.write((const char*)file.data(), file.size());
+    // make file read-only
+    namespace fs = std::filesystem;
+    fs::permissions("out.mid", fs::perms::owner_write, fs::perm_options::remove);
 }
