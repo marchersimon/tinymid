@@ -88,23 +88,31 @@ Event MIDIReader::parseEvent(const Event & previous, bool first) {
         event.absoluteTime = event.deltaTime + previous.absoluteTime;
     }
 
-    switch(int byte = nextByte()) {
-		case 0xFF:
-			event.isMeta = true;
-			event.type = (MIDI::eventType)nextByte();
-			break;
-		case 0xF0:
-			event.isSysex = true;
-			event.type = (MIDI::eventType)nextByte();
-			break;
-		default:
-			if(byte < 0x80) {
-				event.type = previous.type;
-			} else {
-				event.type = (MIDI::eventType)(prevByte() & 0xF0);
+    int byte = nextByte();
+
+    if(byte < 0x80) {
+        pos--;
+        event.isMeta = previous.isMeta;
+        event.isSysex = previous.isSysex;
+        event.type = previous.type;
+        if(event.isSysex || event.isMeta) {
+            nextByte();
+        }
+    } else {
+        switch(byte) {
+            case 0xFF:
+                event.isMeta = true;
+                event.type = (MIDI::eventType)nextByte();
+                break;
+            case 0xF0:
+                event.isSysex = true;
+                event.type = (MIDI::eventType)nextByte();
+                break;
+            default:
+                event.type = (MIDI::eventType)(prevByte() & 0xF0);
                 event.channel = (prevByte() & 0x0F);
-			}
-	}
+        }
+    }
 
 
 	if(event.isMeta || event.isSysex) {
