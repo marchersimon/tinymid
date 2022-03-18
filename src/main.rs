@@ -10,7 +10,10 @@ pub struct Options {
 
 pub struct MIDIFile {
     buffer: Vec<u8>,
-    pos: usize
+    pos: usize,
+    file_format: u16,
+    number_of_track_chunks: u16,
+    division: i16,
 }
 
 impl MIDIFile {
@@ -31,6 +34,35 @@ impl MIDIFile {
             panic!("Panic");
         }
 
+        // File format
+        self.file_format = self.get_word();
+        match self.file_format {
+            0 => println!("Single Track File Format"),
+            1 => println!("Multiple Track File Format"),
+            2 => println!("Multiple Song File Format"),
+            _ => {
+                println!("Invalid file format: {}", self.file_format);
+                panic!("Panic");
+            }
+        }
+
+        // Number of Track Chunks
+        self.number_of_track_chunks = self.get_word();
+        if self.number_of_track_chunks == 0 {
+            println!("MIDI File must have at least one track chunk");
+            panic!("Panic");
+        }
+
+        // Division
+        self.division = self.get_word() as i16;
+        if self.division > 0 {
+            println!("Division given in ticks per beat");
+        } else if self.division < 0 {
+            println!("Division given in SMPTE format");
+        } else {
+            println!("Division cannot be zero");
+            panic!("Panic");
+        }
         true
     }
 
@@ -51,6 +83,11 @@ impl MIDIFile {
             str.push_str(&(self.get_byte() as char).to_string());
         }
         str
+    }
+
+    fn get_word(&mut self) -> u16 {
+        (self.get_byte() as u16) << 8  |
+        (self.get_byte() as u16)
     }
 
     fn get_dword(&mut self) -> u32{
@@ -95,6 +132,6 @@ fn main() {
 
     println!("File is {} Bytes long", buffer.len());
 
-    let mut mid1 = MIDIFile{buffer: buffer, pos: 0};
+    let mut mid1 = MIDIFile{buffer, pos: 0, file_format: 4, number_of_track_chunks: 0, division: 0};
     mid1.check_header();
 }
