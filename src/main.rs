@@ -1,7 +1,8 @@
-use std::{fs::File};
+use std::{fs::File, env};
 use std::io::Read;
-
 use clap::{arg, Command};
+use log::{debug, error};
+use env_logger::Builder;
 
 pub struct Options {
     infile: String,
@@ -11,64 +12,90 @@ pub struct Options {
 pub struct MIDIFile {
     buffer: Vec<u8>,
     pos: usize,
-    file_format: u16,
+    file_format: FileFormat,
     number_of_track_chunks: u16,
     division: i16,
 }
 
+enum FileFormat {
+    SingleTrack,
+    MultipleTrack,
+    MultipleSong,
+}
+
 impl MIDIFile {
-    fn check_header(&mut self) -> bool {
+    
+    fn read_header(&mut self) -> bool {
         // Identifier
         let identifier = self.get_string(4);
         if identifier != "MThd" {
-            println!("Wrong identifier for header chunk");
-            println!("Expected \"MThd\", but got \"{}\"", identifier);
+            error!("Wrong identifier for header chunk");
+            error!("Expected \"MThd\", but got \"{}\"", identifier);
             panic!("Panic");
         }
         
         // Header Length
         let header_lenght = self.get_dword();
         if header_lenght != 6 {
-            println!("Wrong header chunk length");
-            println!("Expected 6, but got {}", header_lenght);
+            error!("Wrong header chunk length");
+            error!("Expected 6, but got {}", header_lenght);
             panic!("Panic");
         }
-
+        
         // File format
-        self.file_format = self.get_word();
-        match self.file_format {
-            0 => println!("Single Track File Format"),
-            1 => println!("Multiple Track File Format"),
-            2 => println!("Multiple Song File Format"),
-            _ => {
-                println!("Invalid file format: {}", self.file_format);
+        match self.get_word() {
+            0 => {
+                debug!("Single Track File Format");
+                self.file_format = FileFormat::SingleTrack;
+            },
+            1 => {
+                debug!("Multiple Track File Format");
+                self.file_format = FileFormat::MultipleTrack;
+            },
+            2 => {
+                debug!("Multiple Song File Format");
+                self.file_format = FileFormat::MultipleSong;
+            },
+            file_format @ _ => {
+                error!("Invalid file format: {}", file_format);
                 panic!("Panic");
             }
         }
-
+        
         // Number of Track Chunks
         self.number_of_track_chunks = self.get_word();
         if self.number_of_track_chunks == 0 {
-            println!("MIDI File must have at least one track chunk");
+            error!("MIDI File must have at least one track chunk");
             panic!("Panic");
         }
-
+        
         // Division
         self.division = self.get_word() as i16;
         if self.division > 0 {
-            println!("Division given in ticks per beat");
+            debug!("Division given in ticks per beat");
         } else if self.division < 0 {
-            println!("Division given in SMPTE format");
+            debug!("Division given in SMPTE format");
         } else {
-            println!("Division cannot be zero");
+            error!("Division cannot be zero");
             panic!("Panic");
         }
         true
     }
 
+    fn new(buffer: Vec<u8>) -> Option<MIDIFile> {
+        let file = MIDIFile {
+            buffer,
+            pos: 0,
+            file_format: FileFormat::SingleTrack,
+            number_of_track_chunks: 0,
+            division: 0,
+        };
+        Some(file)
+    }
+    
     fn get_byte(&mut self) -> u8 {
         if self.pos == self.buffer.len() {
-            println!("File ended too early");
+            error!("File ended too early");
             panic!("Panic");
         }
         let byte = self.buffer[self.pos];
@@ -123,15 +150,25 @@ pub fn read_file(name: String) -> Vec<u8>{
 
 fn main() {
 
-    let opts = cli_parse();
+    
+    let opts = cli_parse();    
+    
+    if opts.debug {
+        env::set_var("RUST_LOG", "debug");
+    }
 
-    println!("Infile: {}", opts.infile);
-    println!("Debug: {}", opts.debug);
+    env_logger::builder()
+        .format_timestamp(None)
+        .format_module_path(false)
+        .init();
+
     
     let buffer = read_file(opts.infile);
 
-    println!("File is {} Bytes long", buffer.len());
-
-    let mut mid1 = MIDIFile{buffer, pos: 0, file_format: 4, number_of_track_chunks: 0, division: 0};
-    mid1.check_header();
+    let mut mid1;
+    match MIDIFile::new(buffer) {
+        Some(mid) => mid1 = mid,
+        None => panic!("aa"),
+    }
+    mid1.read_header();
 }
