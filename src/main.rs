@@ -2,6 +2,7 @@ use std::{fs::File, env};
 use std::io::Read;
 use clap::{arg, Command};
 use log::{debug, error};
+use std::cmp::Ordering;
 
 
 pub struct Options {
@@ -30,16 +31,14 @@ impl MIDIFile {
         let identifier = self.get_string(4)?;
         if identifier != "MThd" {
             return Err(
-                format!("Wrong identifier for header chunk: Expected \"MThd\" but got \"{}\"", identifier)
-                .to_string());
+                format!("Wrong identifier for header chunk: Expected \"MThd\" but got \"{}\"", identifier));
         }
         
         // Header Length
         let header_lenght = self.get_dword()?;
         if header_lenght != 6 {
             return Err(
-                format!("Wrong header chunk length: Expected 0x06 but got {:#06x}", header_lenght)
-                .to_string());
+                format!("Wrong header chunk length: Expected 0x06 but got {:#06x}", header_lenght));
         }
         
         // File format
@@ -56,10 +55,9 @@ impl MIDIFile {
                 debug!("Multiple Song File Format");
                 self.file_format = FileFormat::MultipleSong;
             },
-            file_format @ _ => {
+            file_format=> {
                 return Err(
-                    format!("Invalid file format: {}", file_format)
-                    .to_string());
+                    format!("Invalid file format: {}", file_format));
             }
         }
         
@@ -71,13 +69,14 @@ impl MIDIFile {
         
         // Division
         self.division = self.get_word()? as i16;
-        if self.division > 0 {
-            debug!("Division given in ticks per beat");
-        } else if self.division < 0 {
-            debug!("Division given in SMPTE format");
-        } else {
-            return Err("Division cannot be zero".to_string());
-        }
+        match self.division.cmp(&0) {
+            Ordering::Greater =>
+                debug!("Division given in ticks per beat"),
+            Ordering::Less => 
+                debug!("Division given in SMPTE format"),
+            Ordering::Equal =>
+                return Err("Division cannot be zero".to_string()),
+        };
         Ok(())
     }
 
@@ -145,7 +144,7 @@ pub fn read_file(name: String) -> Result<Vec<u8>, std::io::Error>{
     let mut file = File::open(&name)?;
     let metadata = std::fs::metadata(&name)?;
     let mut buffer = vec![0; metadata.len() as usize];
-    file.read(&mut buffer)?;
+    file.read_exact(&mut buffer)?;
     Ok(buffer)
 }
 
