@@ -2,7 +2,7 @@ use std::{fs::File, env};
 use std::io::Read;
 use clap::{arg, Command};
 use log::{debug, error};
-use env_logger::Builder;
+
 
 pub struct Options {
     infile: String,
@@ -25,25 +25,25 @@ enum FileFormat {
 
 impl MIDIFile {
     
-    fn read_header(&mut self) -> bool {
+    fn read_header(&mut self) -> Result<(), String> {
         // Identifier
-        let identifier = self.get_string(4);
+        let identifier = self.get_string(4)?;
         if identifier != "MThd" {
-            error!("Wrong identifier for header chunk");
-            error!("Expected \"MThd\", but got \"{}\"", identifier);
-            panic!("Panic");
+            return Err(
+                format!("Wrong identifier for header chunk: Expected \"MThd\" but got \"{}\"", identifier)
+                .to_string());
         }
         
         // Header Length
-        let header_lenght = self.get_dword();
+        let header_lenght = self.get_dword()?;
         if header_lenght != 6 {
-            error!("Wrong header chunk length");
-            error!("Expected 6, but got {}", header_lenght);
-            panic!("Panic");
+            return Err(
+                format!("Wrong header chunk length: Expected 0x06 but got {:#06x}", header_lenght)
+                .to_string());
         }
         
         // File format
-        match self.get_word() {
+        match self.get_word()? {
             0 => {
                 debug!("Single Track File Format");
                 self.file_format = FileFormat::SingleTrack;
@@ -57,71 +57,72 @@ impl MIDIFile {
                 self.file_format = FileFormat::MultipleSong;
             },
             file_format @ _ => {
-                error!("Invalid file format: {}", file_format);
-                panic!("Panic");
+                return Err(
+                    format!("Invalid file format: {}", file_format)
+                    .to_string());
             }
         }
         
         // Number of Track Chunks
-        self.number_of_track_chunks = self.get_word();
+        self.number_of_track_chunks = self.get_word()?;
         if self.number_of_track_chunks == 0 {
-            error!("MIDI File must have at least one track chunk");
-            panic!("Panic");
+            return Err("MIDI File must have at least one track chunk".to_string());
         }
         
         // Division
-        self.division = self.get_word() as i16;
+        self.division = self.get_word()? as i16;
         if self.division > 0 {
             debug!("Division given in ticks per beat");
         } else if self.division < 0 {
             debug!("Division given in SMPTE format");
         } else {
-            error!("Division cannot be zero");
-            panic!("Panic");
+            return Err("Division cannot be zero".to_string());
         }
-        true
+        Ok(())
     }
 
-    fn new(buffer: Vec<u8>) -> Option<MIDIFile> {
-        let file = MIDIFile {
+    fn new(buffer: Vec<u8>) -> Result<MIDIFile, String> {
+        let mut file = MIDIFile {
             buffer,
             pos: 0,
             file_format: FileFormat::SingleTrack,
             number_of_track_chunks: 0,
             division: 0,
         };
-        Some(file)
+
+        match file.read_header() {
+            Ok(()) => Ok(file), 
+            Err(str) => Err(str),
+        }
     }
     
-    fn get_byte(&mut self) -> u8 {
+    fn get_byte(&mut self) -> Result<u8, String> {
         if self.pos == self.buffer.len() {
-            error!("File ended too early");
-            panic!("Panic");
+            return Err("File ended unexpectedly".to_string());
         }
         let byte = self.buffer[self.pos];
         self.pos += 1;
-        byte
-
+        Ok(byte)
     }
     
-    fn get_string(&mut self, len: usize) -> String {
+    fn get_string(&mut self, len: usize) -> Result<String, String> {
         let mut str = String::new();
         for _i in 0..len {
-            str.push_str(&(self.get_byte() as char).to_string());
+            str.push_str(&(self.get_byte()? as char).to_string());
         }
-        str
+        Ok(str)
     }
 
-    fn get_word(&mut self) -> u16 {
-        (self.get_byte() as u16) << 8  |
-        (self.get_byte() as u16)
+    fn get_word(&mut self) -> Result<u16, String> {
+        Ok((self.get_byte()? as u16) << 8  |
+           (self.get_byte()? as u16))
     }
 
-    fn get_dword(&mut self) -> u32{
-        (self.get_byte() as u32) << 24 |
-        (self.get_byte() as u32) << 16 |
-        (self.get_byte() as u32) << 8  |
-        (self.get_byte() as u32)
+    fn get_dword(&mut self) -> Result<u32, String> {
+        Ok((self.get_byte()? as u32) << 24 |
+           (self.get_byte()? as u32) << 16 |
+           (self.get_byte()? as u32) << 8  |
+           (self.get_byte()? as u32))
     }
 }
 
@@ -137,15 +138,15 @@ pub fn cli_parse() -> Options {
 
     let opts = Options{infile: matches.value_of("infile").unwrap().to_string(), debug: matches.is_present("debug")};
 
-    return opts;
+    opts
 }
 
-pub fn read_file(name: String) -> Vec<u8>{
-    let mut file = File::open(&name).expect("Could not open file");
-    let metadata = std::fs::metadata(&name).expect("Could not read metadata of file");
+pub fn read_file(name: String) -> Result<Vec<u8>, std::io::Error>{
+    let mut file = File::open(&name)?;
+    let metadata = std::fs::metadata(&name)?;
     let mut buffer = vec![0; metadata.len() as usize];
-    file.read(&mut buffer).expect("buffer overflow");
-    buffer
+    file.read(&mut buffer)?;
+    Ok(buffer)
 }
 
 fn main() {
@@ -163,12 +164,21 @@ fn main() {
         .init();
 
     
-    let buffer = read_file(opts.infile);
+    let buffer: Vec<u8>;
+    match read_file(opts.infile) {
+        Ok(buff) => buffer = buff,
+        Err(err) => {
+            error!("{}", err.to_string());
+            std::process::exit(1);
+        },
+    };
 
-    let mut mid1;
+    let _mid1;
     match MIDIFile::new(buffer) {
-        Some(mid) => mid1 = mid,
-        None => panic!("aa"),
+        Ok(mid) => _mid1 = mid,
+        Err(str) => {
+            error!("{}", str);
+            std::process::exit(1);
+        },
     }
-    mid1.read_header();
 }
