@@ -9,8 +9,8 @@ void MIDIWriter::writeFile() {
 
 void MIDIWriter::writeHeader() {
     writeString("MThd");
-    writeBytes(6, 4);
-    writeBytes(0, 2);
+    writeBytes(6, 4); // header length (6 bytes)
+    writeBytes(0, 2); // single multi-channel track
     writeBytes(midifile.numberOfTracks, 2);
     writeBytes(midifile.division, 2);
 }
