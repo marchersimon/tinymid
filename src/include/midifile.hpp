@@ -23,7 +23,4 @@ class MIDIfile {
     void removeUnwantedEvents();
     void fixNoteEvents();
     void removeChannels();
-
-    void print();
-
 };

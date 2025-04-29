@@ -28,6 +28,7 @@ void MIDIfile::mergeTracks() {
     }
     Event endOfTrack;
     endOfTrack.type = MIDI::eventType::END_OF_TRACK;
+    endOfTrack.isMeta = true;
     endOfTrack.deltaTime = 0;
     endOfTrack.absoluteTime = mergedTrack.back().absoluteTime;
     mergedTrack.push_back(endOfTrack);
@@ -70,15 +71,6 @@ void MIDIfile::removeChannels() {
     for(vector<Event> & track : tracks) {
         for(Event & event : track) {
             event.channel = 0;
-        }
-    }
-}
-
-void MIDIfile::print() {
-    for(const vector<Event> & track : tracks) {
-        Log::debug("Track:\n");
-        for(const Event & event : track) {
-           Log::debugEvent(event);
         }
     }
 }

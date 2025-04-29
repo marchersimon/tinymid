@@ -18,11 +18,16 @@ void MIDIWriter::writeHeader() {
 void MIDIWriter::writeTracks() {
     for(const vector<Event> & track : midifile.tracks) {
         writeString("MTrk");
-        // set the track size to zero for know and save the location
+        // set the track size to zero for now and save the location
         int lengthPosition = file.size();
         writeBytes(0, 4);
 
+        Log::debug("\n\nOutput File:\n");
+        Log::printTableHeader();
+
         for(const Event & event : track) {
+            int startPos = file.size();
+
             writeVLV(event.deltaTime);
 
             if(event.type == MIDI::eventType::NOTE_ON || event.type == MIDI::eventType::NOTE_OFF) {
@@ -39,6 +44,8 @@ void MIDIWriter::writeTracks() {
                 writeBytes(event.type, 1);
                 writeBytes(0, 1);
             }
+
+            Log::debugEvent(event, startPos, file.size(), file);
         }
 
         // write actual length of track
@@ -85,13 +92,10 @@ void MIDIWriter::writeVLV(int data) {
     file.push_back(data & 0x7F);
 }
 
-void MIDIWriter::saveFile() {
-    std::ofstream outstream("out.mid", std::ofstream::binary);
+void MIDIWriter::saveFile(std::string output_file) {
+    std::ofstream outstream(output_file, std::ofstream::binary);
     if(outstream.is_open() == false) {
         Log::error("Could not open output stream");
     }
     outstream.write((const char*)file.data(), file.size());
-    // make file read-only
-    namespace fs = std::filesystem;
-    fs::permissions("out.mid", fs::perms::owner_write, fs::perm_options::remove);
 }

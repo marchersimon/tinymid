@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <exception>
+#include <cstdint>
 
 #include "event.hpp"
 #include "midi.hpp"
@@ -33,8 +34,8 @@ namespace Log {
 	void debug(const string & message);
 	string to_hex_string(const uint32_t & num, bool prefix);
 
+	void printTableHeader();
 	void debugEvent(Event event, int startPos, int endPos, const vector<uint8_t> & file);
-	void debugEvent(Event event);
 
 	string addPadding(string str, int width);
 }

@@ -27,5 +27,5 @@ class MIDIWriter {
     public:
     MIDIWriter(MIDIfile & midifileArg);
     void writeFile();
-    void saveFile();
+    void saveFile(std::string output_file);
 };

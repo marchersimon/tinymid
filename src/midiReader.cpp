@@ -23,7 +23,10 @@ MIDIReader::MIDIReader(string filepath) {
 MIDIfile MIDIReader::parseFile() {
     MIDIfile midifile;
     parseHeader(midifile);
+    Log::debug("\nInput File:");
     for(int i = 0; i < midifile.numberOfTracks; i++) {
+        Log::debug("\nTrack " + to_string(i+1) + ":\n");
+        Log::printTableHeader();
         midifile.addTrack(parseTrack());
     }
     return midifile;
